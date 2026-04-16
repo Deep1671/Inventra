@@ -16,11 +16,18 @@
 .payments-header h1 {
   font-size: 32px;
   font-weight: 700;
+  /* background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text; */
+  margin: 0;
+}
+
+.payments-container h1 .gradient-text {
   background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin: 0;
 }
 
 .btn-primary {
@@ -196,7 +203,9 @@
   font-weight: 700;
   color: #667eea;
 }
-
+.stat-amount .value {
+  color: #44e149;
+}
 .stat-amount.danger {
   color: #dc3545;
 }
@@ -376,6 +385,7 @@
 .stat-item .value {
   font-size: 1.1rem;
   font-weight: 700;
+  color: #28a745;
 }
 
 .progress-bar {

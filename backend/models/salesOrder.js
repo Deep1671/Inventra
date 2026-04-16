@@ -102,6 +102,14 @@ const salesOrderSchema = new mongoose.Schema(
     migration_source_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Sale"
+    },
+    last_reminder_sent: {
+      type: Date,
+      default: null
+    },
+    reminder_count: {
+      type: Number,
+      default: 0
     }
   },
   { timestamps: true }
@@ -128,5 +136,15 @@ salesOrderSchema.pre("save", function () {
   const itemsTotal = this.items.reduce((sum, item) => sum + item.subtotal, 0)
   this.total_amount = itemsTotal + (this.tax_amount || 0) - (this.discount_amount || 0)
 })
+
+// ====================================
+// PERFORMANCE INDEXES
+// ====================================
+salesOrderSchema.index({ status: 1 });                          // Status filtering
+salesOrderSchema.index({ status: 1, createdAt: -1 });           // Status + time range
+salesOrderSchema.index({ "customer_info.email": 1 });           // Customer lookups
+salesOrderSchema.index({ payment_status: 1 });                  // Payment status reporting
+salesOrderSchema.index({ created_by: 1, createdAt: -1 });       // User order history
+salesOrderSchema.index({ order_number: 1 });                    // Order lookup by number
 
 module.exports = mongoose.model("SalesOrder", salesOrderSchema)

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../services/apiClient";
+import { useApiData } from "../hooks/useCache";
+import { useMutation } from "../hooks/useMutation";
 import "../styles/inventory.css";
 import "../styles/lowStock.css";
 
@@ -14,10 +16,6 @@ const Inventory = () => {
     }
   });
   const [activeTab, setActiveTab] = useState("transactions");
-  const [transactions, setTransactions] = useState([]);
-  const [variances, setVariances] = useState([]);
-  const [alerts, setAlerts] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
     transactionType: "",
     days: 30,
@@ -27,9 +25,6 @@ const Inventory = () => {
   const [approvingTxnId, setApprovingTxnId] = useState(null);
   const [showAdjustmentModal, setShowAdjustmentModal] = useState(false);
   const [showVarianceModal, setShowVarianceModal] = useState(false);
-  const [summary, setSummary] = useState([]);
-  const [turnover, setTurnover] = useState([]);
-  const [products, setProducts] = useState([]);
   const [adjustmentForm, setAdjustmentForm] = useState({
     product_id: "",
     quantity_change: "",
@@ -43,121 +38,90 @@ const Inventory = () => {
   const [varianceStatusFilter, setVarianceStatusFilter] = useState("");
   const isAdmin = currentUser?.role === "admin";
 
-  // Fetch inventory transactions
-  useEffect(() => {
-    if (activeTab === "transactions") {
-      fetchTransactions();
-    }
-  }, [activeTab, filters]);
+  // Build query strings for dynamic caching
+  const transactionQuery = new URLSearchParams({
+    ...(filters.transactionType && { transaction_type: filters.transactionType }),
+    ...(filters.days && { days: filters.days }),
+    ...(filters.status && { status: filters.status })
+  }).toString();
 
-  const fetchTransactions = async () => {
-    try {
-      setLoading(true);
-      const query = new URLSearchParams();
-      if (filters.transactionType) query.append("transaction_type", filters.transactionType);
-      if (filters.days) query.append("days", filters.days);
-      if (filters.status) query.append("status", filters.status);
+  const varianceQuery = new URLSearchParams({
+    ...(varianceStatusFilter && { status: varianceStatusFilter })
+  }).toString();
 
-      const res = await api.get(`/inventory/transactions?${query}`);
-      setTransactions(res.data.data || []);
-    } catch (error) {
-      console.error("Error fetching transactions:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Fetch inventory transactions with caching
+  const { 
+    data: transactionData = { data: [] }, 
+    loading: txnLoading, 
+    refetch: refetchTransactions 
+  } = useApiData(
+    `/inventory/transactions${transactionQuery ? `?${transactionQuery}` : ''}`
+  );
 
-  const fetchProducts = async () => {
-    try {
-      const res = await api.get("/products");
-      setProducts(res.data || []);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    }
-  };
+  // Fetch products
+  const { 
+    data: productsData = [], 
+    refetch: refetchProducts 
+  } = useApiData('/products');
 
   // Fetch stock variances
-  const fetchVariances = async () => {
-    try {
-      setLoading(true);
-      const query = new URLSearchParams();
-      if (varianceStatusFilter) query.append("status", varianceStatusFilter);
-      const queryString = query.toString();
-      const res = await api.get(`/inventory/variances${queryString ? `?${queryString}` : ""}`);
-      setVariances(res.data.data || []);
-    } catch (error) {
-      console.error("Error fetching variances:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { 
+    data: varianceData = { data: [] }, 
+    loading: varianceLoading, 
+    refetch: refetchVariances 
+  } = useApiData(
+    `/inventory/variances${varianceQuery ? `?${varianceQuery}` : ''}`
+  );
 
   // Fetch low stock alerts
-  const fetchAlerts = async () => {
-    try {
-      setLoading(true);
-      console.log("Fetching low stock alerts...");
-      
-      // First call the direct endpoint to create alerts if needed
-      const directRes = await api.get(`/inventory/low-stock-direct`);
-      console.log("Direct low stock response:", directRes.data);
-      
-      // Then fetch the actual alerts
-      const res = await api.get(`/inventory/alerts`);
-      console.log("Alerts API response:", res.data);
-      console.log("Alert objects details:", res.data.data?.map(alert => ({
-        name: alert.product_name,
-        supplier_id: alert.preferred_supplier_id,
-        supplier_name: alert.preferred_supplier_id?.name
-      })));
-      setAlerts(res.data.data || []);
-      console.log("Set alerts state:", res.data.data || []);
-    } catch (error) {
-      console.error("Error fetching alerts:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { 
+    data: alertsData = { data: [] }, 
+    loading: alertsLoading, 
+    refetch: refetchAlerts 
+  } = useApiData(
+    '/inventory/alerts'
+  );
 
   // Fetch inventory summary
-  const fetchSummary = async () => {
-    try {
-      const res = await api.get(`/inventory/summary`);
-      console.log("Inventory summary response:", res.data);
-      setSummary(res.data.data || []);
-      if (res.data.data) {
-        res.data.data.forEach((cat, index) => {
-          console.log(`Category ${index + 1}: ${cat._id} - Total Stock: ${cat.total_stock}, Low Stock Items: ${cat.low_stock_items}`);
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching summary:", error);
-    }
-  };
+  const { 
+    data: summaryData = { data: [] }, 
+    refetch: refetchSummary 
+  } = useApiData(
+    '/inventory/summary'
+  );
 
   // Fetch turnover metrics
-  const fetchTurnover = async () => {
-    try {
-      const res = await api.get(`/inventory/turnover?days=30`);
-      setTurnover(res.data.data || []);
-    } catch (error) {
-      console.error("Error fetching turnover:", error);
-    }
-  };
+  const { 
+    data: turnoverData = { data: [] }, 
+    refetch: refetchTurnover 
+  } = useApiData(
+    '/inventory/turnover?days=30'
+  );
 
-  useEffect(() => {
-    if (activeTab === "variances") fetchVariances();
-  }, [activeTab, varianceStatusFilter]);
+  // Mutation for adjustment approval
+  const { mutate: approveAdjustment, loading: approving } = useMutation(
+    '/inventory/adjustments/{txnId}/approve',
+    { autoInvalidate: true }
+  );
 
-  useEffect(() => {
-    fetchProducts();
+  // Mutation for creating adjustments
+  const { mutate: createAdjustment, loading: creating } = useMutation(
+    '/inventory/adjustments',
+    { autoInvalidate: true }
+  );
 
-    if (activeTab === "alerts") fetchAlerts();
-    if (activeTab === "analytics") {
-      fetchSummary();
-      fetchTurnover();
-    }
-  }, [activeTab]);
+  // Mutation for recording variances
+  const { mutate: recordVariance, loading: recording } = useMutation(
+    '/inventory/variances',
+    { autoInvalidate: true }
+  );
+
+  const transactions = transactionData.data || [];
+  const variances = varianceData.data || [];
+  const alerts = alertsData.data || [];
+  const summary = summaryData.data || [];
+  const turnover = turnoverData.data || [];
+  const products = productsData;
 
   // Listen for inventory updates from other components (like PO delivery)
   useEffect(() => {
@@ -167,11 +131,16 @@ const Inventory = () => {
       
       // Refresh alerts if on alerts tab
       if (activeTab === "alerts") {
-        fetchAlerts();
+        refetchAlerts();
       }
       
       // Always refresh summary data as stock levels may have changed
-      fetchSummary();
+      refetchSummary();
+      
+      // Refresh all tabs data
+      refetchTransactions();
+      refetchVariances();
+      refetchTurnover();
     };
     
     window.addEventListener('inventoryUpdated', handleInventoryUpdate);
@@ -179,7 +148,7 @@ const Inventory = () => {
     return () => {
       window.removeEventListener('inventoryUpdated', handleInventoryUpdate);
     };
-  }, [activeTab]);
+  }, [refetchAlerts, refetchSummary, refetchTransactions, refetchVariances, refetchTurnover, activeTab]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -210,7 +179,7 @@ const Inventory = () => {
     }
 
     try {
-      await api.post("/inventory/adjustments", {
+      await createAdjustment({
         product_id: adjustmentForm.product_id,
         quantity_change: Number(adjustmentForm.quantity_change),
         reason: adjustmentForm.reason,
@@ -220,8 +189,8 @@ const Inventory = () => {
       alert("Stock adjustment submitted for approval");
       setShowAdjustmentModal(false);
       resetAdjustmentForm();
-      fetchTransactions();
-      fetchSummary();
+      refetchTransactions();
+      refetchSummary();
     } catch (error) {
       alert("Error creating stock adjustment: " + (error.response?.data?.message || error.message));
     }
@@ -236,7 +205,7 @@ const Inventory = () => {
     }
 
     try {
-      await api.post("/inventory/variances", {
+      await recordVariance({
         product_id: varianceForm.product_id,
         physical_count: Number(varianceForm.physical_count)
       });
@@ -244,8 +213,8 @@ const Inventory = () => {
       alert("Physical count submitted successfully");
       setShowVarianceModal(false);
       resetVarianceForm();
-      fetchVariances();
-      fetchSummary();
+      refetchVariances();
+      refetchSummary();
     } catch (error) {
       alert("Error creating physical count: " + (error.response?.data?.message || error.message));
     }
@@ -460,113 +429,99 @@ const Inventory = () => {
       {activeTab === "transactions" && (
         <div className="tab-content">
           <div className="filter-bar">
-            <select
-              value={filters.transactionType}
-              onChange={(e) => setFilters({ ...filters, transactionType: e.target.value })}
-              className="filter-select"
-            >
-              <option value="">All Transaction Types</option>
-              <option value="BUY">Buy</option>
-              <option value="SALE">Sale</option>
-              <option value="MANUAL_ADJUSTMENT">Manual Adjustment</option>
-              <option value="STOCK_COUNT">Stock Count</option>
-              <option value="DAMAGE">Damage</option>
-              <option value="SUPPLIER_PAYMENT">Supplier Payment</option>
-            </select>
-            <select
-              value={filters.status}
-              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              className="filter-select"
-            >
-              <option value="">All Statuses</option>
-              <option value="PENDING">Pending Approval</option>
-              <option value="APPROVED">Approved</option>
-              <option value="REJECTED">Rejected</option>
-            </select>
-            <input
-              type="number"
-              placeholder="Days"
-              value={filters.days}
-              onChange={(e) => setFilters({ ...filters, days: e.target.value })}
-              className="filter-input"
-            />
+            <div>
+              <span>Transaction Type:</span>
+              <select
+                value={filters.transactionType}
+                onChange={(e) => setFilters({ ...filters, transactionType: e.target.value })}
+                className="filter-select"
+              >
+                <option value="">All</option>
+                <option value="BUY">Buy</option>
+                <option value="SALE">Sale</option>
+                <option value="MANUAL_ADJUSTMENT">Manual Adjustment</option>
+                <option value="STOCK_COUNT">Stock Count</option>
+                <option value="DAMAGE">Damage</option>
+                <option value="SUPPLIER_PAYMENT">Supplier Payment</option>
+              </select>
+            </div>
+            <div>
+              <span>Status:</span>
+              <select
+                value={filters.status}
+                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                className="filter-select"
+              >
+                <option value="">All</option>
+                <option value="PENDING">Pending Approval</option>
+                <option value="APPROVED">Approved</option>
+                <option value="REJECTED">Rejected</option>
+              </select>
+            </div>
+            <div>
+              <span>Total Days:</span>
+              <input
+                type="number"
+                placeholder="30"
+                value={filters.days}
+                onChange={(e) => setFilters({ ...filters, days: e.target.value })}
+                className="filter-input"
+              />
+            </div>
           </div>
 
-          {loading ? (
+          {txnLoading ? (
             <div className="spinner"></div>
           ) : transactions.length === 0 ? (
             <div className="no-data">No transactions found</div>
           ) : (
             <div className="table-wrapper">
-              <div className="transactions-header">
-                <div className="header-cell">Product</div>
-                <div className="header-cell">Type</div>
-                <div className="header-cell">Quantity</div>
-                <div className="header-cell">Before → After</div>
-                <div className="header-cell">Status</div>
-                <div className="header-cell">Date</div>
-                <div className="header-cell">By</div>
-              </div>
-              <div className="transactions-grid">
-                {transactions.map((txn) => (
-                  <div key={txn._id} className={`transaction-card ${getTransactionStatusClass(txn.status)}`}>
-                    <div className="card-header">
-                      <span className="product-name">{txn.product_name}</span>
-                    </div>
-                    
-                    <div className="card-body">
-                      <span className={`badge ${getTransactionTypeBadge(txn.transaction_type)}`}>
-                        {getTransactionTypeDisplay(txn.transaction_type)}
-                      </span>
-                    </div>
-                    
-                    <div className="transaction-row">
-                      <span className={getQuantityColorClass(txn.transaction_type, txn.quantity_change)}>
-                        {txn.quantity_change > 0 ? "+" : ""}{txn.quantity_change}
-                      </span>
-                    </div>
-                    
-                    <div className="transaction-row">
-                      <span className="value">{txn.quantity_before} → {txn.quantity_after}</span>
-                    </div>
-                    
-                    <div className="transaction-row">
-                      <span className={`badge ${getStatusBadge(txn.status)}`}>
-                        {(txn.status || "UNKNOWN").replace(/_/g, " ")}
-                      </span>
-                    </div>
-                    
-                    <div className="transaction-row">
-                      <span className="value">{new Date(txn.createdAt).toLocaleDateString()}</span>
-                    </div>
-                    
-                    <div className="transaction-row">
-                      <span className="value">{txn.created_by?.name || "System"}</span>
-                    </div>
-
-                    {txn.status === "PENDING" && isAdmin && (
-                      <div className="transaction-row actions">
-                        <button
-                          className="btn btn-micro btn--success"
-                          onClick={() => setApprovingTxnId(txn._id)}
-                        >
-                          ✓ Approve
-                        </button>
-                        <button
-                          className="btn btn-micro btn--danger"
-                          onClick={() => {
-                            if (confirm("Reject this transaction?")) {
-                              handleRejectTransaction(txn._id);
-                            }
-                          }}
-                        >
-                          ✕ Reject
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+              <table className="transactions-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Type</th>
+                    <th>Quantity</th>
+                    <th>Before → After</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>By</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactions.map((txn) => (
+                    <tr key={txn._id} className={`transaction-row ${getTransactionStatusClass(txn.status)}`}>
+                      <td className="product-cell">
+                        <span className="product-name">{txn.product_name}</span>
+                      </td>
+                      <td className="type-cell">
+                        <span className={`badge ${getTransactionTypeBadge(txn.transaction_type)}`}>
+                          {getTransactionTypeDisplay(txn.transaction_type)}
+                        </span>
+                      </td>
+                      <td className="quantity-cell">
+                        <span className={getQuantityColorClass(txn.transaction_type, txn.quantity_change)}>
+                          {txn.quantity_change > 0 ? "+" : ""}{txn.quantity_change}
+                        </span>
+                      </td>
+                      <td className="before-after-cell">
+                        <span className="value">{txn.quantity_before} → {txn.quantity_after}</span>
+                      </td>
+                      <td className="status-cell">
+                        <span className={`badge ${getStatusBadge(txn.status)}`}>
+                          {(txn.status || "UNKNOWN").replace(/_/g, " ")}
+                        </span>
+                      </td>
+                      <td className="date-cell">
+                        <span className="value">{new Date(txn.createdAt).toLocaleDateString()}</span>
+                      </td>
+                      <td className="by-cell">
+                        <span className="value">{txn.created_by?.name || "System"}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
@@ -617,7 +572,7 @@ const Inventory = () => {
             </select>
           </div>
 
-          {loading ? (
+          {varianceLoading ? (
             <div className="spinner"></div>
           ) : (
             <div className="grid grid--2">
@@ -676,7 +631,7 @@ const Inventory = () => {
       {/* LOW STOCK ALERTS TAB */}
       {activeTab === "alerts" && (
         <div className="tab-content">
-          {loading ? (
+          {alertsLoading ? (
             <div className="spinner"></div>
           ) : alerts.length === 0 ? (
             <div className="low-stock-empty">
@@ -737,60 +692,64 @@ const Inventory = () => {
       {/* ANALYTICS TAB */}
       {activeTab === "analytics" && (
         <div className="tab-content">
-          <div className="analytics-section">
-            <h2>📊 Inventory Summary by Category</h2>
-            <div className="grid grid--2">
-              {summary.map((cat) => (
-                <div key={cat._id} className="stat-box">
-                  <div className="stat-label">{cat._id}</div>
-                  <div className="stat-value">{cat.total_stock}</div>
-                  <div style={{ fontSize: "0.875rem", color: "#64748b", marginTop: "0.5rem" }}>
-                    Value: ${(cat.total_value || 0).toLocaleString("en-US", { maximumFractionDigits: 2 })}
+            <div style={{ display: "flex", gap: "1.5rem", height: "100%", overflow: "auto" }}>
+            {/* Left Card - Summary */}
+            <div className="analytics-section" style={{ flex: "1", minWidth: "400px", maxHeight: "100%" }}>
+              <h2>📊 Inventory Summary by Category</h2>
+              <div className="grid grid--2">
+                {summary.map((cat) => (
+                  <div key={cat._id} className="stat-box">
+                    <div className="stat-label">{cat._id}</div>
+                    <div className="stat-value">{cat.total_stock}</div>
+                    <div style={{ fontSize: "0.875rem", color: "#64748b", marginTop: "0.5rem" }}>
+                      Value: ${(cat.total_value || 0).toLocaleString("en-US", { maximumFractionDigits: 2 })}
+                    </div>
+                    <div className="alert-stat" style={{ border: "none", padding: "0.5rem 0" }}>
+                      <span className="alert-stat-label">Low Stock Items:</span>
+                      {cat.low_stock_items > 0 ? (
+                        <span className="low-stock-badge">
+                          {cat.low_stock_items} items
+                        </span>
+                      ) : (
+                        <span style={{ color: "#059669", fontWeight: "600", fontSize: "0.875rem" }}>
+                          All Good ✓
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="alert-stat" style={{ border: "none", padding: "0.5rem 0" }}>
-                    <span className="alert-stat-label">Low Stock Items:</span>
-                    {cat.low_stock_items > 0 ? (
-                      <span className="low-stock-badge">
-                        {cat.low_stock_items} items
-                      </span>
-                    ) : (
-                      <span style={{ color: "#059669", fontWeight: "600", fontSize: "0.875rem" }}>
-                        All Good ✓
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
 
-          <div className="analytics-section">
-            <h2>🔄 Inventory Turnover (Last 30 Days)</h2>
-            <div className="table-wrapper turnover-table-wrapper">
-              <table className="table turnover-table">
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th>Sold</th>
-                    <th>Current Stock</th>
-                    <th>Turnover Ratio</th>
-                    <th>Revenue</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {turnover.map((item) => (
-                    <tr key={item._id}>
-                      <td>{item.product_name}</td>
-                      <td>{item.total_sold}</td>
-                      <td>{item.current_stock}</td>
-                      <td>
-                        <strong>{item.turnover_ratio.toFixed(2)}</strong>
-                      </td>
-                      <td>${item.revenue.toLocaleString("en-US", { maximumFractionDigits: 2 })}</td>
+            {/* Right Card - Turnover Table */}
+            <div className="analytics-section" style={{ flex: "1", minWidth: "400px", maxHeight: "100%", overflow: "auto" }}>
+              <h2>🔄 Inventory Turnover (Last 30 Days)</h2>
+              <div className="table-wrapper turnover-table-wrapper" style={{ maxHeight: "calc(100% - 50px)" }}>
+                <table className="table turnover-table">
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Sold</th>
+                      <th>Current Stock</th>
+                      <th>Turnover Ratio</th>
+                      <th>Revenue</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {turnover.map((item) => (
+                      <tr key={item._id}>
+                        <td>{item.product_name}</td>
+                        <td>{item.total_sold}</td>
+                        <td>{item.current_stock}</td>
+                        <td>
+                          <strong>{item.turnover_ratio.toFixed(2)}</strong>
+                        </td>
+                        <td>${item.revenue.toLocaleString("en-US", { maximumFractionDigits: 2 })}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>

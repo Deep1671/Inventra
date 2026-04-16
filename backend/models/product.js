@@ -72,7 +72,22 @@ productSchema.virtual("profit_per_unit").get(function () {
   return this.selling_price - this.cost_price
 })
 
+// ====================================
+// PERFORMANCE INDEXES
+// ====================================
+// Single field indexes for frequent queries
+productSchema.index({ category: 1 });                           // Category filtering
+productSchema.index({ current_stock: 1 });                      // Stock level queries
+productSchema.index({ reorder_point: 1 });                      // Reorder alerts
+productSchema.index({ preferred_supplier_id: 1 });              // Supplier lookups
 
+// Compound index for "low stock products" query
+// Prevents double scan when filtering (stock <= reorder_point)
+productSchema.index({ current_stock: 1, reorder_point: 1 });
+
+// Indexes for sorting operations
+productSchema.index({ selling_price: -1 });                     // High-value products
+productSchema.index({ createdAt: -1 });                         // Recent products
 
 // Ensure virtual fields are included in JSON response
 productSchema.set("toJSON", { virtuals: true })

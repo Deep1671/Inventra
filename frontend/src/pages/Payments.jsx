@@ -33,12 +33,25 @@ function Payments() {
         api.get("/payments"),
         api.get("/suppliers")
       ])
-      setPayments(paymentsRes.data.data || paymentsRes.data || [])
-      setSuppliers(suppliersRes.data.data || suppliersRes.data || [])
+      
+      // Safely extract data with fallback defaults
+      const paymentsData = paymentsRes?.data?.data || paymentsRes?.data || []
+      const suppliersData = suppliersRes?.data?.data || suppliersRes?.data || []
+      
+      console.log("✅ Payments - API Responses:", {
+        payments: paymentsData,
+        suppliers: suppliersData
+      })
+      
+      setPayments(Array.isArray(paymentsData) ? paymentsData : [])
+      setSuppliers(Array.isArray(suppliersData) ? suppliersData : [])
       setError("")
     } catch (err) {
       setError("Failed to fetch data")
-      console.error(err)
+      console.error("❌ Fetch error:", err)
+      // Set safe defaults on error
+      setPayments([])
+      setSuppliers([])
     } finally {
       setLoading(false)
     }
@@ -123,6 +136,7 @@ function Payments() {
     const matchesMethod = filterMethod === "" || payment.payment_method === filterMethod
     return matchesSupplier && matchesMethod
   })
+  const displayedPayments = filteredPayments.slice(0, 10)
 
   const methodColors = {
     CASH: "#ffc107",
@@ -141,7 +155,7 @@ function Payments() {
   return (
     <div className="payments-container">
       <div className="payments-header">
-        <h1>Payment Tracking</h1>
+        <h1>💳 <span className="gradient-text">Payment Tracking</span> </h1>
         <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
           {showForm ? "Cancel" : "+ Record Payment"}
         </button>
@@ -166,7 +180,7 @@ function Payments() {
                   <option value="">Select Supplier</option>
                   {suppliers.map((supplier) => (
                     <option key={supplier._id} value={supplier._id}>
-                      {supplier.name} (Due: ₹{supplier.balance_due.toFixed(2)})
+                      {supplier.name} (Due: ₹{(supplier?.balance_due || 0).toFixed(2)})
                     </option>
                   ))}
                 </select>
@@ -239,16 +253,16 @@ function Payments() {
       <div className="stats-container">
         <div className="stat-card">
           <h4>Total Payments (This View)</h4>
-          <p className="stat-amount">₹{totalPayments.toFixed(2)}</p>
+          <p className="stat-amount">₹{(Array.isArray(filteredPayments) ? filteredPayments.reduce((sum, p) => sum + (p?.amount || 0), 0) : 0).toFixed(2)}</p>
         </div>
         <div className="stat-card">
           <h4>Active Suppliers</h4>
-          <p className="stat-amount">{suppliers.length}</p>
+          <p className="stat-amount">{Array.isArray(suppliers) ? suppliers.length : 0}</p>
         </div>
         <div className="stat-card">
           <h4>Total Due (All)</h4>
           <p className="stat-amount danger">
-            ₹{suppliers.reduce((sum, s) => sum + s.balance_due, 0).toFixed(2)}
+            ₹{(Array.isArray(suppliers) ? suppliers.reduce((sum, s) => sum + (s?.balance_due || 0), 0) : 0).toFixed(2)}
           </p>
         </div>
       </div>
@@ -285,7 +299,7 @@ function Payments() {
         <h2>Payment History</h2>
         {loading ? (
           <div className="loading">Loading payments...</div>
-        ) : filteredPayments.length === 0 ? (
+        ) : displayedPayments.length === 0 ? (
           <div className="no-data">No payments found</div>
         ) : (
           <div className="payments-table-container">
@@ -302,7 +316,7 @@ function Payments() {
                 </tr>
               </thead>
               <tbody>
-                {filteredPayments.map((payment) => (
+                {displayedPayments.map((payment) => (
                   <tr key={payment._id}>
                     <td>{new Date(payment.payment_date).toLocaleDateString()}</td>
                     <td>

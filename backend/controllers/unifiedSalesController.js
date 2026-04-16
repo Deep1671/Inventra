@@ -11,9 +11,9 @@ const mongoose = require("mongoose")
 // ====================================
 
 // ====================================
-// GET ALL SALES (Unified View)
+// GET SALES ORDERS (For UnifiedSales Dashboard)
 // ====================================
-const getAllSales = async (req, res) => {
+const getSalesOrders = async (req, res) => {
   try {
     const { page = 1, limit = 10, status, customer_name, order_type } = req.query
     
@@ -67,6 +67,162 @@ const getAllSales = async (req, res) => {
       }
     })
   } catch (error) {
+    console.error("❌ Error fetching sales orders:", error)
+    res.status(500).json({ success: false, message: error.message })
+  }
+}
+
+// ====================================
+// GET ALL SALES LINE ITEMS (For sales.jsx)
+// ====================================
+const getAllSalesLineItems = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, status, customer_name, order_type } = req.query
+    
+    const skip = (page - 1) * parseInt(limit)
+    const limitNum = parseInt(limit)
+    
+    // Get both legacy Sales and SalesOrders
+    const [legacySales, salesOrders, totalLegacy, totalOrders] = await Promise.all([
+      Sale.find()
+        .sort({ createdAt: -1 })
+        .lean(),
+      SalesOrder.find(status ? { status } : {})
+        .populate("items.product_id", "name sku category")
+        .sort({ createdAt: -1 })
+        .lean(),
+      Sale.countDocuments(),
+      SalesOrder.countDocuments(status ? { status } : {})
+    ])
+    
+    // Convert legacy Sales to flat format
+    const flatLegacySales = legacySales.map(sale => ({
+      _id: sale._id,
+      product_name: sale.product_name || "Unknown Product",
+      quantity_sold: sale.quantity_sold,
+      revenue: sale.revenue,
+      createdAt: sale.createdAt,
+      type: 'Legacy Sale'
+    }))
+    
+    // Flatten SalesOrder items into individual line items
+    const flatOrderItems = []
+    salesOrders.forEach(order => {
+      order.items.forEach(item => {
+        flatOrderItems.push({
+          _id: `${order._id}-${item._id}`,
+          order_id: order._id,
+          order_number: order.order_number,
+          product_name: item.product_name || item.product_id?.name || "Unknown Product",
+          quantity_sold: item.quantity,
+          revenue: item.subtotal || (item.quantity * item.unit_price),
+          unit_price: item.unit_price,
+          customer_name: order.customer_info?.name,
+          payment_method: order.payment_method,
+          status: order.status,
+          createdAt: order.createdAt,
+          type: 'Sales Order'
+        })
+      })
+    })
+    
+    // Combine and sort by date
+    const allSales = [...flatLegacySales, ...flatOrderItems]
+    allSales.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    
+    // Paginate combined results
+    const paginatedSales = allSales.slice(skip, skip + limitNum)
+    const total = allSales.length
+    
+    res.status(200).json({
+      success: true,
+      data: paginatedSales,
+      pagination: {
+        current_page: parseInt(page),
+        total_pages: Math.ceil(total / limitNum),
+        total_records: total,
+        per_page: limitNum
+      }
+    })
+  } catch (error) {
+    console.error("❌ Error fetching sales line items:", error)
+    res.status(500).json({ success: false, message: error.message })
+  }
+}
+
+// ====================================
+// GET ALL SALES (Legacy - kept for compatibility)
+// ====================================
+const getAllSales = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, status, customer_name, order_type } = req.query
+    
+    const skip = (page - 1) * parseInt(limit)
+    const limitNum = parseInt(limit)
+    
+    // Get both legacy Sales and SalesOrders
+    const [legacySales, salesOrders, totalLegacy, totalOrders] = await Promise.all([
+      Sale.find()
+        .sort({ createdAt: -1 })
+        .lean(),
+      SalesOrder.find(status ? { status } : {})
+        .populate("items.product_id", "name sku category")
+        .sort({ createdAt: -1 })
+        .lean(),
+      Sale.countDocuments(),
+      SalesOrder.countDocuments(status ? { status } : {})
+    ])
+    
+    // Convert legacy Sales to flat format
+    const flatLegacySales = legacySales.map(sale => ({
+      _id: sale._id,
+      product_name: sale.product_name || "Unknown Product",
+      quantity_sold: sale.quantity_sold,
+      revenue: sale.revenue,
+      createdAt: sale.createdAt,
+      type: 'Legacy Sale'
+    }))
+    
+    // Flatten SalesOrder items into individual line items
+    const flatOrderItems = []
+    salesOrders.forEach(order => {
+      order.items.forEach(item => {
+        flatOrderItems.push({
+          _id: `${order._id}-${item._id}`,
+          order_id: order._id,
+          order_number: order.order_number,
+          product_name: item.product_name || item.product_id?.name || "Unknown Product",
+          quantity_sold: item.quantity,
+          revenue: item.subtotal || (item.quantity * item.unit_price),
+          unit_price: item.unit_price,
+          customer_name: order.customer_info?.name,
+          payment_method: order.payment_method,
+          status: order.status,
+          createdAt: order.createdAt,
+          type: 'Sales Order'
+        })
+      })
+    })
+    
+    // Combine and sort by date
+    const allSales = [...flatLegacySales, ...flatOrderItems]
+    allSales.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    
+    // Paginate combined results
+    const paginatedSales = allSales.slice(skip, skip + limitNum)
+    const total = allSales.length
+    
+    res.status(200).json({
+      success: true,
+      data: paginatedSales,
+      pagination: {
+        current_page: parseInt(page),
+        total_pages: Math.ceil(total / limitNum),
+        total_records: total,
+        per_page: limitNum
+      }
+    })
+  } catch (error) {
     console.error("❌ Error fetching unified sales:", error)
     res.status(500).json({ success: false, message: error.message })
   }
@@ -77,7 +233,7 @@ const getAllSales = async (req, res) => {
 // ====================================
 const createQuickSale = async (req, res) => {
   try {
-    const { product_id, quantity_sold, customer_name = "Walk-in Customer", payment_method = "CASH" } = req.body
+    const { product_id, quantity_sold, customer_name = "Walk-in Customer", customer_info = {}, payment_method = "CASH" } = req.body
     
     // Validate required fields
     if (!product_id || !quantity_sold) {
@@ -110,14 +266,19 @@ const createQuickSale = async (req, res) => {
     // Generate unique order number
     const orderNumber = `QS-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
     
+    const resolvedPhone = customer_info.phone || req.body.customer_phone || ""
+    const resolvedPhoneCountryCode = customer_info.phone_country_code || req.body.phone_country_code || ""
+
     // Create as single-item sales order
     const quickSaleOrder = new SalesOrder({
       order_number: orderNumber,
       customer_info: {
-        name: customer_name,
-        email: "",
-        phone: "",
-        address: ""
+        name: customer_info.name || customer_name,
+        email: customer_info.email || "",
+        phone: resolvedPhoneCountryCode && resolvedPhone
+          ? `${resolvedPhoneCountryCode}${resolvedPhone}`
+          : resolvedPhone,
+        address: customer_info.address || ""
       },
       items: [{
         product_id: product._id,
@@ -692,6 +853,8 @@ const getSalesDashboard = async (req, res) => {
 }
 
 module.exports = {
+  getSalesOrders,
+  getAllSalesLineItems,
   getAllSales,
   createQuickSale,
   createSalesOrder,

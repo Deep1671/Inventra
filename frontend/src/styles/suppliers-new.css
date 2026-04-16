@@ -87,11 +87,17 @@
 .suppliers-header h1 {
  font-size: 32px;
   font-weight: 700;
+  /* background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text; */
+  margin: 0;
+}
+.suppliers-container h1 .gradient-text {
   background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin: 0;
 }
 
 /* ========================================

@@ -39,24 +39,32 @@ function PurchaseOrders() {
         api.get("/suppliers"),
         api.get("/products")
       ])
-      console.log("PurchaseOrders - API Responses:", {
-        orders: ordersRes.data,
-        suppliers: suppliersRes.data,
-        products: productsRes.data
+      
+      // Safely extract data with fallback defaults
+      const ordersData = ordersRes?.data?.data || ordersRes?.data || []
+      const suppliersData = suppliersRes?.data?.data || suppliersRes?.data || []
+      const productsArray = Array.isArray(productsRes?.data) 
+        ? productsRes.data 
+        : (productsRes?.data?.data || [])
+      
+      console.log("✅ PurchaseOrders - API Responses:", {
+        orders: ordersData,
+        suppliers: suppliersData,
+        products: productsArray
       })
       
-      setOrders(ordersRes.data.data || ordersRes.data || [])
-      setSuppliers(suppliersRes.data.data || suppliersRes.data || [])
-      
-      // Products API returns array directly
-      const productsData = Array.isArray(productsRes.data) ? productsRes.data : (productsRes.data.data || [])
-      console.log("Products extracted:", productsData)
-      setProducts(productsData)
+      setOrders(Array.isArray(ordersData) ? ordersData : [])
+      setSuppliers(Array.isArray(suppliersData) ? suppliersData : [])
+      setProducts(Array.isArray(productsArray) ? productsArray : [])
       
       setError("")
     } catch (err) {
       setError("Failed to fetch data")
-      console.error("Fetch error:", err)
+      console.error("❌ Fetch error:", err)
+      // Set safe defaults on error
+      setOrders([])
+      setSuppliers([])
+      setProducts([])
     } finally {
       setLoading(false)
     }
@@ -193,12 +201,15 @@ function PurchaseOrders() {
   }
 
   const getSupplierName = (supplierId) => {
-    return suppliers.find((s) => s._id === supplierId)?.name || "Unknown"
+    // Handle both object and string IDs
+    const id = typeof supplierId === 'object' ? supplierId?._id : supplierId
+    return suppliers.find((s) => s._id === id)?.name || "Unknown"
   }
 
   const filteredOrders = orders.filter((order) => {
-    const matchesStatus = filterStatus === "" || order.status === filterStatus
-    const matchesSupplier = filterSupplier === "" || order.supplier_id._id === filterSupplier
+    const matchesStatus = filterStatus === "" || order?.status === filterStatus
+    const supplierId = typeof order?.supplier_id === 'object' ? order?.supplier_id?._id : order?.supplier_id
+    const matchesSupplier = filterSupplier === "" || supplierId === filterSupplier
     return matchesStatus && matchesSupplier
   })
 
@@ -216,7 +227,7 @@ function PurchaseOrders() {
   return (
     <div className="purchase-orders-container">
       <div className="po-header">
-        <h1>Purchase Orders</h1>
+        <h1>📋 <span className="gradient-text">Purchase Orders</span></h1>
         <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
           {showForm ? "Cancel" : "+ Create Order"}
         </button>
@@ -399,19 +410,19 @@ function PurchaseOrders() {
             <div key={order._id} className="po-card">
               <div className="po-header-row">
                 <div>
-                  <h3>{order.order_number}</h3>
+                  <h3>{order?.order_number || "N/A"}</h3>
                   <p className="supplier-name">
-                    Supplier: <strong>{order.supplier_id.name}</strong>
+                    Supplier: <strong>{getSupplierName(order?.supplier_id)}</strong>
                   </p>
                 </div>
                 <div className="po-right">
                   <span
                     className="status-badge"
-                    style={{ backgroundColor: statusColors[order.status] }}
+                    style={{ backgroundColor: statusColors[order?.status] }}
                   >
-                    {order.status}
+                    {order?.status || "PENDING"}
                   </span>
-                  <span className="order-amount">₹{order.total_amount.toFixed(2)}</span>
+                  <span className="order-amount">₹{(order?.total_amount || 0).toFixed(2)}</span>
                 </div>
               </div>
 
@@ -426,12 +437,12 @@ function PurchaseOrders() {
                     </tr>
                   </thead>
                   <tbody>
-                    {order.items.map((item, idx) => (
+                    {Array.isArray(order?.items) && order.items.map((item, idx) => (
                       <tr key={idx}>
-                        <td>{item.product_name}</td>
-                        <td>{item.quantity}</td>
-                        <td>₹{item.unit_price.toFixed(2)}</td>
-                        <td>₹{item.total.toFixed(2)}</td>
+                        <td>{item?.product_name || "N/A"}</td>
+                        <td>{item?.quantity || 0}</td>
+                        <td>₹{(item?.unit_price || 0).toFixed(2)}</td>
+                        <td>₹{(item?.total || 0).toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -442,7 +453,7 @@ function PurchaseOrders() {
                 <div className="timeline-item">
                   <span className="label">Created:</span>
                   <span className="value">
-                    {order.createdAt ? 
+                    {order?.createdAt ? 
                       new Date(order.createdAt).toLocaleDateString('en-IN', {
                         year: 'numeric',
                         month: 'short',

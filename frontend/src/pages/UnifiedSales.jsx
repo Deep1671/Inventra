@@ -10,6 +10,10 @@ const UnifiedSales = () => {
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({});
   
+  // Modal state for order details
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  
   // UI States
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard', 'list', 'create'
   const [filters, setFilters] = useState({
@@ -33,6 +37,31 @@ const UnifiedSales = () => {
     address: ''
   });
 
+  const normalizeCountryCode = (code = '') => {
+    const digits = code.replace(/\D/g, '').slice(0, 4);
+    return digits ? `+${digits}` : '';
+  };
+
+  const normalizePhoneDigits = (phone = '') => phone.replace(/\D/g, '').slice(0, 15);
+
+  const buildFullPhoneNumber = (countryCode, phone) => {
+    const normalizedCountryCode = normalizeCountryCode(countryCode);
+    const normalizedPhone = normalizePhoneDigits(phone);
+    const countryDigits = normalizedCountryCode.replace(/\D/g, '');
+
+    if (!normalizedPhone) {
+      return '';
+    }
+
+    if (countryDigits && normalizedPhone.startsWith(countryDigits) && normalizedPhone.length > countryDigits.length + 6) {
+      return `+${normalizedPhone}`;
+    }
+
+    return normalizedCountryCode
+      ? `${normalizedCountryCode}${normalizedPhone}`
+      : normalizedPhone;
+  };
+
   useEffect(() => {
     fetchSales();
     fetchProducts();
@@ -49,8 +78,13 @@ const UnifiedSales = () => {
       queryParams.append('limit', '10');
 
       const response = await api.get(`/sales?${queryParams.toString()}`);
-      setSales(response.data.data);
-      setPagination(response.data.pagination);
+      
+      // Handle both wrapped and unwrapped responses
+      const salesData = response?.data || response || [];
+      const paginationData = response?.pagination || {};
+      
+      setSales(Array.isArray(salesData) ? salesData : []);
+      setPagination(paginationData);
     } catch (error) {
       console.error('❌ Error fetching sales:', error);
     } finally {
@@ -63,11 +97,13 @@ const UnifiedSales = () => {
       console.log('Fetching products...');
       const response = await api.get('/products');
       console.log('Full API response:', response);
-      console.log('Response status:', response.status);
-      console.log('Response data:', response.data);
       
-      // The API returns products directly, not in a data wrapper
-      const productsData = response.data.data || response.data;
+      // apiService returns unwrapped data, not axios response
+      // response could be an array directly or wrapped in data property
+      const productsData = Array.isArray(response) 
+        ? response 
+        : (response?.data || response || []);
+      
       console.log('Processed products data:', productsData);
       
       if (Array.isArray(productsData)) {
@@ -185,11 +221,11 @@ const UnifiedSales = () => {
       }
     }
     
-    // Phone validation - exactly 10 digits
+    // Phone validation - allow international length
     if (hasPhone) {
-      const phoneRegex = /^\d{10}$/;
-      if (!phoneRegex.test(customerInfo.phone.trim())) {
-        alert('Phone number must be exactly 10 digits');
+      const normalizedPhone = normalizePhoneDigits(customerInfo.phone);
+      if (normalizedPhone.length < 7 || normalizedPhone.length > 15) {
+        alert('Phone number must be between 7 and 15 digits');
         return;
       }
     }
@@ -204,6 +240,12 @@ const UnifiedSales = () => {
       alert('Please add at least one product to the cart');
       return;
     }
+
+    const normalizedCustomerInfo = {
+      ...customerInfo,
+      phone_country_code: normalizeCountryCode(customerInfo.phone_country_code) || '+91',
+      phone: buildFullPhoneNumber(customerInfo.phone_country_code, customerInfo.phone)
+    };
 
     // Validate all items have valid quantities
     const invalidItems = cart.filter(item => !item.quantity || item.quantity < 1);
@@ -221,14 +263,16 @@ const UnifiedSales = () => {
         const saleData = {
           product_id: cart[0].product_id,
           quantity_sold: cart[0].quantity,
-          customer_name: customerInfo.name.trim()
+          customer_name: customerInfo.name.trim(),
+          customer_info: normalizedCustomerInfo
         };
         const response = await api.post('/sales/quick', saleData);
-        alert(`✅ ${response.data.message}`);
+        const message = response?.message || response?.data?.message || '✅ Sale created successfully';
+        alert(message);
       } else {
         // Multi-item order or complex sale
         const orderData = {
-          customer_info: customerInfo,
+          customer_info: normalizedCustomerInfo,
           items: cart,
           payment_method: 'CASH',
           notes: '',
@@ -236,7 +280,8 @@ const UnifiedSales = () => {
           tax_amount: 0
         };
         const response = await api.post('/sales/orders', orderData);
-        alert(`✅ ${response.data.message}`);
+        const message = response?.message || response?.data?.message || '✅ Order created successfully';
+        alert(message);
       }
       
       clearCart();
@@ -333,7 +378,7 @@ const UnifiedSales = () => {
         status: newStatus
       });
       
-      console.log('✅ Status update response:', response.data);
+      console.log('✅ Status update response:', response);
       alert(`✅ Order status updated to ${newStatus}`);
       fetchSales();
     } catch (error) {
@@ -357,6 +402,17 @@ const UnifiedSales = () => {
     return `badge ${statusColors[status] || 'badge-default'}`;
   };
 
+  // Show order details modal
+  const showOrderDetails = (order) => {
+    setSelectedOrder(order);
+    setShowOrderModal(true);
+  };
+
+  // Close order details modal
+  const closeOrderModal = () => {
+    setShowOrderModal(false);
+    setSelectedOrder(null);
+  };
 
   return (
     <div className="sales-container">
@@ -439,16 +495,43 @@ const UnifiedSales = () => {
               <div className="no-data">📄 No sales found</div>
             )}
 
-            {!loading && sales.map(sale => (
-              <div key={sale._id} className="sale-item">
+            {!loading && sales.map(sale => {
+              // Safe date formatting
+              const formatDate = (dateStr) => {
+                if (!dateStr) return 'N/A';
+                try {
+                  const date = new Date(dateStr);
+                  if (isNaN(date.getTime())) return 'N/A';
+                  return date.toLocaleDateString('en-IN', { 
+                    year: 'numeric', 
+                    month: '2-digit', 
+                    day: '2-digit' 
+                  });
+                } catch (e) {
+                  return 'N/A';
+                }
+              };
+
+              const displayDate = sale.order_date || sale.createdAt;
+              const displayTotal = sale.total_amount || 0;
+
+              return (
+              <div 
+                key={sale._id} 
+                className="sale-item"
+                onClick={() => showOrderDetails(sale)}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="sale-info">
-                  <h4>{sale.order_number}</h4>
-                  <p>👤 {sale.customer_name} | 📅 {new Date(sale.order_date).toLocaleDateString()}</p>
+                  <h4>{sale.order_number || 'Unknown'}</h4>
+                  <p>👤 {sale.customer_name || 'N/A'}</p>
+                  {sale.customer_info?.phone && <p>📱 {sale.customer_info.phone}</p>}
+                  <p>📅 {formatDate(displayDate)}</p>
                 </div>
                 
                 <div className="sale-details">
                   <span className={getStatusBadge(sale.status)}>{sale.status}</span>
-                  <span className="sale-total">💰 ${sale.total_amount.toLocaleString()}</span>
+                  <span className="sale-total">💰 ₹{displayTotal.toLocaleString()}</span>
                 </div>
                 
                 <div className="sale-actions">
@@ -486,7 +569,8 @@ const UnifiedSales = () => {
                   )}
                 </div>
               </div>
-            ))}
+            );
+            })}
           </div>
 
           {/* Pagination */}
@@ -532,7 +616,7 @@ const UnifiedSales = () => {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Email or Phone *</label>
+                  <label>Email (optional)</label>
                   <input
                     type="email"
                     value={customerInfo.email}
@@ -547,7 +631,7 @@ const UnifiedSales = () => {
                       type="text"
                       value={customerInfo.phone_country_code}
                       onChange={(e) => {
-                        const value = e.target.value.replace(/\s/g, '');
+                        const value = normalizeCountryCode(e.target.value);
                         setCustomerInfo({...customerInfo, phone_country_code: value || '+91'});
                       }}
                       placeholder="+91"
@@ -558,11 +642,30 @@ const UnifiedSales = () => {
                       type="tel"
                       value={customerInfo.phone}
                       onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '').slice(0, 10);
-                        setCustomerInfo({...customerInfo, phone: value});
+                        const rawValue = e.target.value;
+                        const normalizedDigits = normalizePhoneDigits(rawValue);
+
+                        if (rawValue.trim().startsWith('+')) {
+                          const countryMatch = rawValue.match(/^\+\s*(\d{1,4})/);
+                          if (countryMatch) {
+                            const parsedCountryCode = `+${countryMatch[1]}`;
+                            const localPhone = normalizedDigits.startsWith(countryMatch[1])
+                              ? normalizedDigits.slice(countryMatch[1].length)
+                              : normalizedDigits;
+
+                            setCustomerInfo({
+                              ...customerInfo,
+                              phone_country_code: parsedCountryCode,
+                              phone: localPhone
+                            });
+                            return;
+                          }
+                        }
+
+                        setCustomerInfo({...customerInfo, phone: normalizedDigits});
                       }}
-                      placeholder="10-digit number"
-                      maxLength="10"
+                      placeholder="Phone number"
+                      maxLength="15"
                     />
                   </div>
                   <small className="phone-helper">Examples: +91 (India), +1 (USA), +44 (UK), +61 (Australia)</small>
@@ -687,12 +790,138 @@ const UnifiedSales = () => {
                 type="button" 
                 onClick={() => {
                   clearCart();
-                  setCustomerInfo({ name: 'Walk-in Customer', email: '', phone: '', address: '' });
+                  setCustomerInfo({ name: 'Walk-in Customer', email: '', phone_country_code: '+91', phone: '', address: '' });
                 }} 
                 className="btn-secondary"
               >
                 🔄 Reset
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ORDER DETAILS MODAL */}
+      {showOrderModal && selectedOrder && (
+        <div className="modal-overlay" onClick={closeOrderModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Order Details</h2>
+              <button className="modal-close" onClick={closeOrderModal}>✕</button>
+            </div>
+
+            <div className="modal-body">
+              {/* Order Info */}
+              <div className="order-section">
+                <h3>📋 Order Information</h3>
+                <div className="info-grid">
+                  <div className="info-row">
+                    <span className="info-label">Order Number:</span>
+                    <span className="info-value">{selectedOrder.order_number}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="info-label">Status:</span>
+                    <span className={`badge ${selectedOrder.status?.toLowerCase()}`}>
+                      {selectedOrder.status}
+                    </span>
+                  </div>
+                  <div className="info-row">
+                    <span className="info-label">Order Date:</span>
+                    <span className="info-value">
+                      {new Date(selectedOrder.order_date || selectedOrder.createdAt).toLocaleDateString('en-IN')}
+                    </span>
+                  </div>
+                  <div className="info-row">
+                    <span className="info-label">Order Type:</span>
+                    <span className="info-value">{selectedOrder.type || 'Sales Order'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Customer Info */}
+              <div className="order-section">
+                <h3>👤 Customer Information</h3>
+                <div className="info-grid">
+                  <div className="info-row">
+                    <span className="info-label">Name:</span>
+                    <span className="info-value">{selectedOrder.customer_name}</span>
+                  </div>
+                  {selectedOrder.customer_info?.email && (
+                    <div className="info-row">
+                      <span className="info-label">Email:</span>
+                      <span className="info-value">{selectedOrder.customer_info.email}</span>
+                    </div>
+                  )}
+                  {selectedOrder.customer_info?.phone && (
+                    <div className="info-row">
+                      <span className="info-label">Phone:</span>
+                      <span className="info-value">{selectedOrder.customer_info.phone}</span>
+                    </div>
+                  )}
+                  {selectedOrder.customer_info?.address && (
+                    <div className="info-row">
+                      <span className="info-label">Address:</span>
+                      <span className="info-value">{selectedOrder.customer_info.address}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Items */}
+              {selectedOrder.items && selectedOrder.items.length > 0 && (
+                <div className="order-section">
+                  <h3>📦 Order Items</h3>
+                  <div className="items-table">
+                    <div className="items-header">
+                      <div className="col-product">Product</div>
+                      <div className="col-qty">Qty</div>
+                      <div className="col-price">Unit Price</div>
+                      <div className="col-subtotal">Subtotal</div>
+                    </div>
+                    {selectedOrder.items.map((item, idx) => (
+                      <div key={idx} className="items-row">
+                        <div className="col-product">{item.product_name}</div>
+                        <div className="col-qty">{item.quantity}</div>
+                        <div className="col-price">₹{item.unit_price?.toLocaleString()}</div>
+                        <div className="col-subtotal">
+                          ₹{(item.quantity * item.unit_price)?.toLocaleString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Payment Info */}
+              <div className="order-section">
+                <h3>💳 Payment Information</h3>
+                <div className="info-grid">
+                  <div className="info-row">
+                    <span className="info-label">Payment Method:</span>
+                    <span className="info-value">{selectedOrder.payment_method || 'N/A'}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="info-label">Payment Status:</span>
+                    <span className="info-value">{selectedOrder.payment_status || 'N/A'}</span>
+                  </div>
+                  <div className="info-row total-row">
+                    <span className="info-label">Total Amount:</span>
+                    <span className="info-value total-amount">₹{selectedOrder.total_amount?.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notes */}
+              {selectedOrder.notes && (
+                <div className="order-section">
+                  <h3>📝 Notes</h3>
+                  <p className="notes-text">{selectedOrder.notes}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn-primary" onClick={closeOrderModal}>Close</button>
             </div>
           </div>
         </div>

@@ -1,23 +1,39 @@
+import { Suspense } from "react"
 import Sidebar from "../components/Sidebar"
-import { Outlet } from "react-router-dom"
+import Topbar from "../components/topbar"
+import ChatBot from "../components/ChatBot"
+import { Outlet, useLocation } from "react-router-dom"
 import "../styles/dashboardLayout.css"
 
-function DashboardLayout(){
+function DashboardLayout() {
+  const location = useLocation()
 
-return(
+  return (
+    <div className="dashboard-layout">
+      <Sidebar />
 
-<div className="dashboard-layout">
+      <div className="dashboard-container">
+        <Topbar />
 
-<Sidebar />
+        <main className="dashboard-main">
+          <Suspense
+            fallback={
+              <div className="page-loader">
+                <div className="spinner"></div>
+                <p>Loading...</p>
+              </div>
+            }
+          >
+            <div key={location.pathname} className="page-transition">
+              <Outlet />
+            </div>
+          </Suspense>
+        </main>
+      </div>
 
-<div className="dashboard-main">
-<Outlet />
-</div>
-
-</div>
-
-)
-
+      <ChatBot style={{ pointerEvents: 'auto' }} />
+    </div>
+  )
 }
 
-export default DashboardLayout
+export default DashboardLayout  

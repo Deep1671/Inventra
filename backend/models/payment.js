@@ -10,14 +10,6 @@ const paymentSchema = new mongoose.Schema({
 
   payment_method: String,
 
-  status: {
-    type: String,
-    enum: ["PENDING", "SUCCESS", "FAILED"],
-    default: "SUCCESS"
-  },
-
-  razorpay_payout_id: String,
-
   reference_number: String,
   notes: String,
 

@@ -67,6 +67,14 @@ const purchaseOrderSchema = new mongoose.Schema(
     is_auto_generated: {
       type: Boolean,
       default: false
+    },
+    last_reminder_sent: {
+      type: Date,
+      default: null
+    },
+    reminder_count: {
+      type: Number,
+      default: 0
     }
   },
   { timestamps: true }

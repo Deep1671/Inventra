@@ -227,13 +227,23 @@ const lowStockAlertSchema = new mongoose.Schema(
   }
 );
 
-// Indexes for performance
-inventoryTransactionSchema.index({ product_id: 1, createdAt: -1 });
-inventoryTransactionSchema.index({ transaction_type: 1 });
-inventoryTransactionSchema.index({ reference_id: 1 });
+// ====================================
+// PERFORMANCE INDEXES
+// ====================================
+// Composite indexes for common query patterns
+inventoryTransactionSchema.index({ product_id: 1, createdAt: -1 });    // Product history timeline
+inventoryTransactionSchema.index({ created_by: 1, transaction_type: 1 }); // User activity tracking
+inventoryTransactionSchema.index({ transaction_type: 1, createdAt: -1 }); // Transaction filtering with sorting
+inventoryTransactionSchema.index({ status: 1, createdAt: -1 });         // Pending approvals queries
+inventoryTransactionSchema.index({ reference_id: 1 });                  // Find transactions by PO/Sale
 
-stockVarianceSchema.index({ product_id: 1, investigation_status: 1 });
-lowStockAlertSchema.index({ product_id: 1, alert_status: 1 });
+stockVarianceSchema.index({ product_id: 1, investigation_status: 1 });   // Variance filtering
+stockVarianceSchema.index({ investigation_status: 1, createdAt: -1 });   // Investigation queue
+stockVarianceSchema.index({ variance_percentage: 1 });                    // High variance alerts
+
+lowStockAlertSchema.index({ product_id: 1, alert_status: 1 });           // Alert filtering
+lowStockAlertSchema.index({ alert_status: 1, createdAt: -1 });           // Active alerts list
+lowStockAlertSchema.index({ reorder_point: 1 });                         // Reorder analysis
 
 module.exports = {
   InventoryTransaction: mongoose.model("InventoryTransaction", inventoryTransactionSchema),

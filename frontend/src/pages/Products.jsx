@@ -1,17 +1,26 @@
 import { useEffect, useState } from "react"
 import api from "../services/apiClient"
 import ProductModal from "../components/ProductModel"
+import { useApiData } from "../hooks/useCache"
+import { useMutation } from "../hooks/useMutation"
 import "../styles/product.css"
 
 function Products() {
 
-const [products,setProducts] = useState([])
 const [search,setSearch] = useState("")
 const [showModal,setShowModal] = useState(false)
 const [editingProduct,setEditingProduct] = useState(null)
-
 const [currentPage,setCurrentPage] = useState(1)
 const productsPerPage = 10
+
+// Fetch products
+const { data: products = [], refetch: refetchProducts } = useApiData('/products');
+
+// Mutation for deleting product
+const { mutate: deleteProduct, loading: deleting } = useMutation('/products/{id}', {
+  method: 'DELETE',
+  autoInvalidate: true
+});
 
 const totalProducts = products.length
 
@@ -24,20 +33,8 @@ const inventoryValue = products.reduce(
 0
 )
 
-/* FETCH PRODUCTS */
-const fetchProducts = async () => {
-try{
-console.log("Fetching products...");
-const res = await api.get("/products")
-console.log("Products fetched:", res.data.length);
-setProducts(res.data)
-}catch(err){
-console.error("Error fetching products:", err)
-}
-}
-
 useEffect(()=>{
-fetchProducts()
+  refetchProducts()
 },[])
 
 // Listen for inventory updates from other components (like PO delivery)
@@ -45,7 +42,7 @@ useEffect(() => {
 const handleInventoryUpdate = (event) => {
 console.log("🔄 Products page - Inventory updated event received:", event.detail);
 console.log("🔄 Refreshing products data due to external update...");
-fetchProducts();
+refetchProducts();
 };
 
 window.addEventListener('inventoryUpdated', handleInventoryUpdate);
@@ -53,7 +50,7 @@ window.addEventListener('inventoryUpdated', handleInventoryUpdate);
 return () => {
 window.removeEventListener('inventoryUpdated', handleInventoryUpdate);
 };
-}, []);
+}, [refetchProducts]);
 
 
 /* DELETE PRODUCT */
@@ -63,11 +60,8 @@ const handleDelete = async(id)=>{
 if(!window.confirm("Delete this product?")) return
 
 try{
-
-await api.delete(`/products/${id}`)
-
-fetchProducts()
-
+  await deleteProduct(null, `/products/${id}`)
+  refetchProducts()
 }catch(err){
 console.error("Error deleting product:", err)
 }
@@ -100,7 +94,7 @@ return(
 
 <div className="products-header">
 
-<h2>Products</h2>
+<h2>📦 <span className="gradient-text">Products</span></h2>
 
 <button
 className="add-product-btn"

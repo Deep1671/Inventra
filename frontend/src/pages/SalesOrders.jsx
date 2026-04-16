@@ -36,8 +36,11 @@ const SalesOrders = () => {
       queryParams.append('limit', '10');
 
       const response = await api.get(`/sales-orders?${queryParams.toString()}`);
-      setSalesOrders(response.data.data);
-      setPagination(response.data.pagination);
+      // Handle both wrapped and unwrapped responses
+      const ordersData = response?.data || response || [];
+      const paginationData = response?.pagination || {};
+      setSalesOrders(Array.isArray(ordersData) ? ordersData : []);
+      setPagination(paginationData);
     } catch (error) {
       console.error('❌ Error fetching sales orders:', error);
     } finally {
@@ -48,7 +51,9 @@ const SalesOrders = () => {
   const fetchProducts = async () => {
     try {
       const response = await api.get('/products');
-      setProducts(response.data.data || []);
+      // apiService returns unwrapped data
+      const productsData = Array.isArray(response) ? response : (response?.data || response || []);
+      setProducts(Array.isArray(productsData) ? productsData : []);
     } catch (error) {
       console.error('❌ Error fetching products:', error);
     }
@@ -236,6 +241,7 @@ const SalesOrders = () => {
               <div className="order-info">
                 <h3>{order.order_number}</h3>
                 <p className="customer-name">👤 {order.customer_info.name}</p>
+                {order.customer_info.phone && <p className="customer-phone">📱 {order.customer_info.phone}</p>}
                 <p className="order-date">📅 {new Date(order.order_date).toLocaleDateString()}</p>
               </div>
               <div className="order-status">

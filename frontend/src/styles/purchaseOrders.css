@@ -17,11 +17,18 @@
 .po-header h1 {
   font-size: 32px;
   font-weight: 700;
+  /* background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text; */
+  margin: 0;
+}
+
+.purchase-orders-container h1 .gradient-text {
   background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin: 0;
 }
 
 .btn-primary {
@@ -244,7 +251,7 @@
   border: 2px solid #194571;
   border-radius: 6px;
   font-size: 0.95rem; 
-  background: rgb(160, 93, 93);  
+  background: rgb(246, 242, 242);  
 }
 
 .filter-select:focus {

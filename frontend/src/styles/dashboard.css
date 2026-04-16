@@ -8,7 +8,8 @@ box-sizing:border-box;
 font-family:"Inter","Segoe UI",sans-serif;
 color:#ffffff;
 background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-}
+overflow:visible;
+    }
 
 /* BACKGROUND IMAGE */
 .dashboard-container::before{
@@ -64,11 +65,17 @@ font-size:15px;
 .dashboard-title{
   font-size: 32px;
   font-weight: 700;
+  /* background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text; */
+  margin: 0;
+}
+.dashboard-container h1 .gradient-text {
   background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin: 0;
 }
 
 .dashboard-logo{
@@ -114,7 +121,7 @@ cursor:pointer;
   box-shadow: 0 4px 15px rgba(0,0,0,0.2);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   min-width: 160px;
   z-index: 1000;  /* Added - now above all content */
   pointer-events: auto;  /* Added - buttons are clickable */
@@ -184,7 +191,7 @@ transform:translateY(-1px);
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .logout-btn::before {
@@ -270,7 +277,7 @@ margin-top:15px;
 border-collapse:collapse;
 background:white;
 border-radius:10px;
-overflow:hidden;
+overflow:visible;
 }
 
 .sales-table thead{

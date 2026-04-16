@@ -104,4 +104,22 @@ router.post("/auto-create-pos", auth, roleMiddleware(["admin"]), async (req, res
   }
 });
 
+// Manual trigger for delivery reminders (Admin only) - for testing
+router.post("/send-delivery-reminders", auth, roleMiddleware(["admin"]), async (req, res) => {
+  try {
+    await emailAutomation.sendDeliveryReminders();
+    res.status(200).json({
+      success: true,
+      message: "Delivery reminder emails sent successfully"
+    });
+  } catch (error) {
+    console.error("❌ Error in delivery reminders:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error sending delivery reminders",
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;

@@ -1,0 +1,23 @@
+{
+  "buildCommand": "npm install",
+  "framework": "express",
+  "nodeVersion": "18.x",
+  "env": {
+    "MONGO_URI": "@mongo-uri",
+    "PORT": "3001",
+    "JWT_SECRET": "@jwt-secret",
+    "GOOGLE_CLIENT_ID": "@google-client-id",
+    "EMAIL_USER": "@email-user",
+    "EMAIL_PASS": "@email-pass",
+    "FRONTEND_URL": "@frontend-url",
+    "OPENROUTER_API_KEY": "@openrouter-api-key",
+    "SEND_EMAILS": "true",
+    "ADMIN_EMAIL": "@admin-email"
+  },
+  "functions": {
+    "server.js": {
+      "memory": 3008,
+      "maxDuration": 30
+    }
+  }
+}

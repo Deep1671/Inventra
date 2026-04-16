@@ -900,6 +900,135 @@ class EmailService {
       </html>
     `
   }
+
+  generateDeliveryReminderEmail(purchaseOrders = [], salesOrders = []) {
+    const poRows = purchaseOrders.map(po => `
+      <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 12px; text-align: left;">
+          <strong style="color: #2c5aa0;">${po.order_number}</strong>
+        </td>
+        <td style="padding: 12px; text-align: left;">Purchase Order</td>
+        <td style="padding: 12px; text-align: left;">${po.supplier_id?.name || 'N/A'}</td>
+        <td style="padding: 12px; text-align: center;">
+          <span style="background: #ff9800; color: white; padding: 4px 8px; border-radius: 3px; font-size: 12px;">
+            ${po.status}
+          </span>
+        </td>
+        <td style="padding: 12px; text-align: left;">
+          ${new Date(po.createdAt).toLocaleDateString()} (${Math.floor((Date.now() - new Date(po.createdAt)) / (1000 * 60 * 60 * 24))} days ago)
+        </td>
+        <td style="padding: 12px; text-align: right;"><strong>₹${po.total_amount?.toFixed(2) || '0.00'}</strong></td>
+      </tr>
+    `).join('')
+
+    const soRows = salesOrders.map(so => `
+      <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 12px; text-align: left;">
+          <strong style="color: #2c5aa0;">${so.order_number}</strong>
+        </td>
+        <td style="padding: 12px; text-align: left;">Sales Order</td>
+        <td style="padding: 12px; text-align: left;">${so.customer_info?.name || 'N/A'}</td>
+        <td style="padding: 12px; text-align: center;">
+          <span style="background: #ff9800; color: white; padding: 4px 8px; border-radius: 3px; font-size: 12px;">
+            ${so.status}
+          </span>
+        </td>
+        <td style="padding: 12px; text-align: left;">
+          ${new Date(so.order_date).toLocaleDateString()} (${Math.floor((Date.now() - new Date(so.order_date)) / (1000 * 60 * 60 * 24))} days ago)
+        </td>
+        <td style="padding: 12px; text-align: right;"><strong>₹${so.total_amount?.toFixed(2) || '0.00'}</strong></td>
+      </tr>
+    `).join('')
+
+    const allRows = poRows + soRows
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Order Delivery Reminder</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background: #f9f9f9; margin: 0; padding: 0; }
+          .container { max-width: 900px; margin: 20px auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+          .header { background: linear-gradient(135deg, #d32f2f 0%, #ff5252 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+          .header h1 { margin: 0; font-size: 28px; }
+          .header p { margin: 5px 0 0 0; font-size: 14px; opacity: 0.9; }
+          .content { padding: 30px; }
+          .alert-box { background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; margin: 20px 0; border-radius: 4px; }
+          .alert-box strong { color: #ff6600; }
+          table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+          th { background: #f44336; color: white; padding: 12px; text-align: left; font-weight: bold; }
+          tr:hover { background: #f5f5f5; }
+          .summary { background: #e3f2fd; padding: 15px; border-radius: 4px; margin: 20px 0; }
+          .summary strong { color: #1976d2; }
+          .footer { background: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #eee; }
+          .action-button { display: inline-block; background: #d32f2f; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; margin-top: 15px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>⏰ Order Delivery Reminder</h1>
+            <p>Orders pending delivery for 2 or more days</p>
+          </div>
+
+          <div class="content">
+            <div class="alert-box">
+              <strong>⚠️ Action Required:</strong> The following orders have not been delivered yet and are ${purchaseOrders.length === 0 ? "already" : "now"} overdue. Please take necessary action to expedite delivery.
+            </div>
+
+            <div class="summary">
+              <strong>📊 Summary:</strong>
+              <ul style="margin: 10px 0;">
+                <li><strong>${purchaseOrders.length}</strong> Purchase Orders pending delivery</li>
+                <li><strong>${salesOrders.length}</strong> Sales Orders not completed</li>
+                <li><strong>Total Orders:</strong> ${purchaseOrders.length + salesOrders.length}</li>
+              </ul>
+            </div>
+
+            <h2 style="color: #d32f2f; margin-top: 25px;">📋 Pending Orders Details</h2>
+            
+            <table>
+              <thead>
+                <tr>
+                  <th>Order Number</th>
+                  <th>Type</th>
+                  <th>Supplier / Customer</th>
+                  <th>Status</th>
+                  <th>Created Date</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${allRows || '<tr><td colspan="6" style="padding: 20px; text-align: center; color: #999;">No pending orders</td></tr>'}
+              </tbody>
+            </table>
+
+            <h3 style="color: #333; margin-top: 25px;">📌 Recommended Actions:</h3>
+            <ul style="line-height: 1.8;">
+              <li><strong>For Purchase Orders:</strong> Contact suppliers to check delivery status and expected arrival dates</li>
+              <li><strong>For Sales Orders:</strong> Update customers on delivery status or re-evaluate fulfillment options</li>
+              <li><strong>Follow-up:</strong> Create escalation tickets for any orders without confirmed delivery dates</li>
+              <li><strong>Inventory:</strong> Check if alternative suppliers can expedite delivery for critical items</li>
+            </ul>
+
+            <div style="margin-top: 25px; padding: 15px; background: #f0f0f0; border-radius: 4px;">
+              <p style="margin: 0; color: #666; font-size: 12px;">
+                <strong>Next Reminder:</strong> You will receive the next reminder in 2 days if these orders are not resolved.
+              </p>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p>This is an automated reminder from Smart Inventory Management System</p>
+            <p>If you have any questions, please contact the system administrator</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  }
 }
 
 module.exports = new EmailService()

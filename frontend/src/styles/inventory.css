@@ -5,15 +5,18 @@
 .inventory-container {
   padding: var(--spacing-xl);
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  height: 100vh;
   min-height: 100vh;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .inventory-container::before {
   content: "";
   position: absolute;
-  top: 0;
+  top: 35px;
   left: 0;
   right: 0;
   bottom: 0;
@@ -44,15 +47,18 @@
 .inventory-container > * {
   position: relative;
   z-index: 1;
+  padding-top: 35px;
 }
 
 .inventory-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  align-content: center;
   margin-bottom: var(--spacing-2xl);
   padding-bottom: var(--spacing-lg);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem 0.5rem 0.5rem 0.5rem;
 }
 
 .inventory-header h1 {
@@ -65,31 +71,35 @@
 
 .header-actions {
   display: flex;
-  gap: var(--spacing-md);
+  gap: 10px;
+  border-radius: 0.5rem 0.5rem 0.5rem 0.5rem;
 }
 
 /* ========== GRID LAYOUTS ========== */
 .grid {
   display: grid;
-  gap: var(--spacing-lg);
+  border-radius: 0.75rem;
 }
 
 .grid--2 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--spacing-lg);
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  border-radius: 0.75rem;
 }
 
 /* ========== TABS ========== */
 
 .inventory-tabs {
   display: flex;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-xl);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 10px;
+  border-bottom: 10px;
   overflow-x: auto;
-  padding-bottom: 0;
+  border-radius: 0.635rem 0.635rem 0.635rem 0.635rem;
+  margin-top:10px ;
+  gap :10px;
   background: transparent;
+  align-content: center;
 }
 
 .tab-btn {
@@ -100,6 +110,7 @@
   border-radius: 0.5rem 0.5rem 0 0;
   font-size: 0.9375rem;
   font-weight: 600;
+    align-content: center;
   color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
   transition: all 0.3s ease;
@@ -122,6 +133,12 @@
 
 .tab-content {
   animation: fadeIn var(--transition-slow);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  overflow: auto;
+  padding-right: 0.5rem;
 }
 
 /* ============================================
@@ -130,28 +147,77 @@
 
 .filter-bar {
   display: flex;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
+  align-items: center;
+  gap: 1.5rem;
   flex-wrap: wrap;
+  flex-shrink: 0;
+  padding: 1rem 1.5rem;
+  margin: 0 0 1rem 0;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.75rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.filter-bar > * {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-bar > span {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .filter-select,
 .filter-input {
-  padding: 0.625rem var(--spacing-md);
-  border: 1px solid var(--slate-300);
-  border-radius: var(--radius-md);
-  font-size: 0.9375rem;
-  min-width: 150px;
-  background-color: white;
-  color: var(--slate-900);
+  padding: 0.625rem 0.875rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background-color: rgba(255, 255, 255, 0.95);
+  color: #1e293b;
+  font-weight: 500;
   transition: all var(--transition-fast);
+  min-width: 140px;
+}
+
+.filter-select {
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: rgba(255, 255, 255, 0.95);
+  padding-right: 0.875rem;
+}
+
+.filter-input {
+  font-variant-numeric: tabular-nums;
+}
+
+.filter-select::placeholder,
+.filter-input::placeholder {
+  color: rgba(30, 41, 59, 0.6);
+}
+
+.filter-select:hover,
+.filter-input:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  background-color: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .filter-select:focus,
 .filter-input:focus {
   outline: none;
-  border-color: var(--primary-500);
-  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+  border-color: #fbbf24;
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
 }
 
 /* ============================================
@@ -288,13 +354,14 @@
    ============================================ */
 
 .analytics-section {
-  margin-bottom: 3rem;
+  margin-bottom: 1.5rem;
   background: white !important;
-  border-radius: 1.25rem;
-  padding: 2rem;
+  border-radius: 0.875rem;
+  padding: 1rem 1.25rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.3);
   transition: all 0.3s ease;
+  overflow: auto;
 }
 
 .analytics-section:hover {
@@ -303,12 +370,12 @@
 }
 
 .analytics-section h2 {
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #1a202c;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
   margin-top: 0;
-  padding-bottom: 1rem;
+  padding-bottom: 0.5rem;
   border-bottom: 1px solid #e2e8f0;
 }
 
@@ -428,19 +495,35 @@
 .btn--secondary {
   background: #6b7280;
   color: white;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
 .btn--secondary:hover {
   background: #4b5563;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
 }
 
 .btn--primary {
   background: #3b82f6;
   color: white;
+  border-radius: 0.375rem;
+    padding: 0.5rem 1rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
 .btn--primary:hover {
   background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
 /* Scoped table style to match other system tables */
@@ -453,7 +536,7 @@
 }
 
 .turnover-table {
-  width: 100%;
+  width: 100%;  
   border-collapse: collapse;
   background: white;
   table-layout: fixed;
@@ -749,86 +832,105 @@
 .table-wrapper {
   background: white;
   border-radius: 0.75rem;
-  overflow: hidden;
+  overflow: auto;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  flex: 1;
+  height: 100%;
 }
 
-.transactions-header {
-  display: grid;
-  grid-template-columns: minmax(120px, 1fr) minmax(120px, 1fr) minmax(100px, 1fr) minmax(140px, 1fr) minmax(90px, 1fr) minmax(100px, 1fr) minmax(150px, 1fr) auto;
-  gap: 1rem;
-  padding: 1.25rem 1.25rem;
+.transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  table-layout: fixed;
+}
+
+.transactions-table thead {
   background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
-  font-weight: 700;
-  font-size: 0.9rem;
-  text-align: center;
-  color: #374151;
-  text-transform: capitalize;
+  position: sticky;
+  top: 0;
 }
 
-.header-cell {
-  color: #374151;
+.transactions-table th {
+  padding: 0.875rem 1rem;
+  text-align: center;
   font-weight: 600;
   font-size: 0.875rem;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+  white-space: nowrap;
+  text-transform: capitalize;
+  background: #f9fafb;
 }
 
-.transactions-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0;
-  background: white;
-  border-radius: 0;
-  overflow: hidden;
-}
-
-.transaction-card {
-  background: white;
-  border-radius: 0;
-  padding: 1.25rem 1.5rem;
-  border: none;
+.transactions-table tbody tr {
+  display: table-row;
   border-bottom: 1px solid #e5e7eb;
-  box-shadow: none;
-  transition: all 0.2s ease;
-  display: grid;
-  grid-template-columns: minmax(120px, 1fr) minmax(120px, 1fr) minmax(100px, 1fr) minmax(140px, 1fr) minmax(90px, 1fr) minmax(100px, 1fr) minmax(150px, 1fr) auto;
-  gap: 1rem;
-  align-items: center;
-  align-content: center;
+  transition: background-color 0.2s ease;
 }
 
-.transaction-card:last-child {
+.transactions-table tbody tr:last-child {
   border-bottom: none;
 }
 
-.transaction-card:hover {
+.transactions-table tbody tr:hover {
   background-color: #f9fafb;
-  transform: none;
-  box-shadow: none;
 }
 
-.transaction-card .card-header {
-  display: contents;
+.transactions-table td {
+  padding: 0.875rem 1rem;
+  font-size: 0.9rem;
+  color: #374151;
+  vertical-align: middle;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.transaction-card .product-name {
-  margin: 0;
-  font-size: 0.95rem;
+.transactions-table .product-name {
   font-weight: 600;
   color: #1a202c;
-  min-width: 0;
   word-break: break-word;
   overflow-wrap: break-word;
-  display: block;
-  width: 100%;
+  display: inline;
 }
 
-.transaction-card .card-body {
-  display: contents;
+.transactions-table .value {
+  display: inline;
+  margin: 0;
 }
 
-.transaction-row {
-  display: contents;
+.transactions-table .product-cell {
+  font-weight: 600;
+  color: #1a202c;
+  text-align: left;
+}
+
+.transactions-table .type-cell {
+  text-align: center;
+}
+
+.transactions-table .quantity-cell {
+  text-align: center;
+  font-weight: 600;
+}
+
+.transactions-table .before-after-cell {
+  text-align: center;
+}
+
+.transactions-table .status-cell {
+  text-align: center;
+}
+
+.transactions-table .date-cell {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.transactions-table .by-cell {
+  text-align: center;
 }
 
 .transaction-row .label {
@@ -839,15 +941,13 @@
   font-size: 0.9rem;
   font-weight: 500;
   color: #374151;
-  text-align: center ;
+  text-align: center;
   word-break: break-word;
   overflow-wrap: break-word;
   white-space: normal;
-  line-height: 1.4;
+  line-height: 1;
   min-width: 0;
-  max-width: 100%;
   display: block;
-  width: 100%;
 }
 
 .transaction-row .badge {
@@ -876,6 +976,7 @@
   text-transform: none;
   letter-spacing: 0.5px;
   white-space: nowrap;
+  margin: 0;
 }
 
 .badge--info {
@@ -913,9 +1014,90 @@
    ============================================ */
 
 @media (max-width: 1024px) {
-  .transactions-header {
+  .grid--2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+  }
+
+  .transactions-table th,
+  .transactions-table td {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  /* Stack analytics cards vertically on smaller screens */
+  .tab-content > div[style*="display: flex"] {
+    flex-direction: column !important;
+  }
+
+  .tab-content > div[style*="display: flex"] > div {
+    min-width: 100% !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .transactions-table {
+    min-width: 600px;
+  }
+
+  .transactions-table th,
+  .transactions-table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .transactions-table .date-cell,
+  .transactions-table .by-cell {
     display: none;
   }
+
+  .transactions-table th:nth-child(6),
+  .transactions-table th:nth-child(7) {
+    display: none;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .action-buttons .btn-micro {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .transactions-table {
+    min-width: 500px;
+  }
+
+  .transactions-table th,
+  .transactions-table td {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .transactions-table .before-after-cell {
+    display: none;
+  }
+
+  .transactions-table th:nth-child(4) {
+    display: none;
+  }
+
+  .product-cell {
+    max-width: 80px !important;
+  }
+}
   
   .transactions-grid {
     grid-template-columns: 1fr;
@@ -935,9 +1117,8 @@
   .transaction-row .value {
     margin-left: 0.5rem;
   }
-}
 
-@media (max-width: 768px) {
+  @media (max-width: 768px) {
   .transaction-card {
     grid-template-columns: 1fr;
     gap: 0.75rem;
@@ -954,7 +1135,11 @@
   .transaction-row .value {
     text-align: left;
   }
-}
+
+  .grid--2 {
+    grid-template-columns: 1fr;
+  }
+  }
 
 /* ============================================
    COLORED STAT BOXES - MUST BE AT THE END

@@ -1,6 +1,8 @@
 import { useState } from "react"
 import axios from "axios"
-import { useParams } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
+import logo from "../assets/Inventra.png"
+import "../styles/authRecovery.css"
 
 function ResetPassword(){
 
@@ -39,33 +41,39 @@ function ResetPassword(){
   }
 
   return(
+    <div className="recovery-page">
+      <div className="recovery-card">
+        <img src={logo} alt="Inventra" className="recovery-logo" />
 
-    <div style={{padding:"40px"}}>
+        <div className="recovery-header">
+          <p className="eyebrow">Set a new password</p>
+          <h2>Reset your password</h2>
+          <p>Choose a new password for your Inventra account.</p>
+        </div>
 
-      <h2>Reset Password</h2>
+        <form onSubmit={handleSubmit} className="recovery-form">
+          <label htmlFor="password">New password</label>
+          <input
+            id="password"
+            type="password"
+            placeholder="Enter new password"
+            value={password}
+            onChange={(e)=>setPassword(e.target.value)}
+            required
+          />
 
-      <form onSubmit={handleSubmit}>
+          {message && <div className="recovery-message">{message}</div>}
 
-        <input
-          type="password"
-          placeholder="Enter new password"
-          value={password}
-          onChange={(e)=>setPassword(e.target.value)}
-          required
-        />
+          <button type="submit" disabled={loading} className="recovery-btn">
+            {loading ? "Updating..." : "Reset Password"}
+          </button>
+        </form>
 
-        <br/><br/>
-
-        <button type="submit" disabled={loading}>
-          {loading ? "Updating..." : "Reset Password"}
-        </button>
-
-      </form>
-
-      {message && <p>{message}</p>}
-
+        <div className="recovery-footer">
+          <Link to="/" className="recovery-link">Back to login</Link>
+        </div>
+      </div>
     </div>
-
   )
 
 }

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react"
 import api from "../services/apiClient"
+import { useApiData } from "../hooks/useCache"
+import { useMutation } from "../hooks/useMutation"
 import "../styles/suppliers-new.css"
 
 function Suppliers() {
-  const [suppliers, setSuppliers] = useState([])
-  const [loading, setLoading] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [searchTerm, setSearchTerm] = useState("")
@@ -13,7 +13,6 @@ function Suppliers() {
   const [success, setSuccess] = useState("")
   const [activePaymentSupplierId, setActivePaymentSupplierId] = useState("")
   const [supplierPayments, setSupplierPayments] = useState([])
-  const [paymentLoading, setPaymentLoading] = useState(false)
 
   const paymentMethods = ["CASH", "BANK_TRANSFER", "UPI", "CHEQUE"]
 
@@ -45,37 +44,24 @@ function Suppliers() {
   const [selectedCategories, setSelectedCategories] = useState([])
   const categoryOptions = ["Electronics", "Groceries", "Clothing", "Books", "Furniture", "Other"]
 
-  useEffect(() => {
-    fetchSuppliers()
-  }, [])
+  // Fetch suppliers
+  const { data: suppliers = [], loading, refetch: refetchSuppliers } = useApiData('/suppliers');
 
-  const fetchSuppliers = async () => {
-    try {
-      setLoading(true)
-      setError("")
-      const response = await api.get("/suppliers")
-      console.log("=== FETCH SUPPLIERS DEBUG ===");
-      console.log("Suppliers fetched:", response.data)
-      console.log("Number of suppliers:", response.data.length);
-      if (response.data.length > 0) {
-        console.log("First supplier structure:", response.data[0]);
-        console.log("First supplier._id:", response.data[0]._id);
-        console.log("All supplier IDs:", response.data.map(s => ({ name: s.name, _id: s._id })));
-      }
-      console.log("=== END FETCH SUPPLIERS DEBUG ===");
-      setSuppliers(response.data)
-    } catch (err) {
-      const errorMsg = err.response?.data?.message || err.message || "Failed to fetch suppliers"
-      setError(errorMsg)
-      console.error("Fetch suppliers error:", {
-        status: err.response?.status,
-        message: err.response?.data?.message,
-        error: err.message
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Mutation for deleting supplier
+  const { mutate: deleteSupplier } = useMutation('/suppliers/{id}', {
+    method: 'DELETE',
+    autoInvalidate: true
+  });
+
+  // Mutation for creating/updating supplier
+  const { mutate: saveSupplier } = useMutation('/suppliers', {
+    method: 'POST',
+    autoInvalidate: true
+  });
+
+  useEffect(() => {
+    refetchSuppliers()
+  }, [])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -294,7 +280,7 @@ function Suppliers() {
   return (
     <div className="suppliers-container">
       <div className="suppliers-header">
-        <h1>Suppliers Management</h1>
+        <h1>🤝<span className="gradient-text"> Suppliers Management</span></h1>
         <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
           {showForm ? "Cancel" : "+ Add Supplier"}
         </button>

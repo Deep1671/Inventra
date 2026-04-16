@@ -16,20 +16,6 @@ const token = localStorage.getItem("token")
 const rawUser = localStorage.getItem("user")
 const currentUser = rawUser ? JSON.parse(rawUser) : null
 
-
-// LOGOUT
-
-const handleLogout = () => {
-console.log("Logout clicked")
-// Clear all authentication data
-localStorage.clear()
-sessionStorage.clear()
-
-// Navigate to home
-window.location.href = "/"
-}
-
-
 // FETCH USERS
 
 const fetchUsers = async()=>{
@@ -134,29 +120,9 @@ return(
 
 <div className="users-header">
 
-<h2>Users</h2>
-
-<div className="users-actions">
-
-<span className="user-name">
-👤 {currentUser?.name}
-</span>
-
-<button
-className="logout-btn"
-onClick={(e) => {
-e.preventDefault()
-e.stopPropagation()
-handleLogout()
-}}
->
-Logout
-</button>
+<h2>👥 <span className="gradient-text">Users</span></h2>
 
 </div>
-
-</div>
-
 
 <table className="users-table">
 

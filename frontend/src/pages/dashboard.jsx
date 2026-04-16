@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import api from "../services/apiClient"
 import { useNavigate } from "react-router-dom"
+import { useApiData } from "../hooks/useCache"
 import "../styles/dashboard.css"
 
 function Dashboard() {
@@ -13,77 +14,44 @@ const [user, setUser] = useState(() => {
   return rawUser ? JSON.parse(rawUser) : null
 })
 
-const [data,setData] = useState({
-  today_revenue:0,
-  top_product:null,
-  low_stock_alerts:[],
-  recent_sales:[]
+// Replace useState + useEffect with useApiData
+const { data, loading, error, refetch } = useApiData('/analytics/overview', {
+  defaultValue: {
+    today_revenue: 0,
+    revenue_change_percentage: 0,
+    top_product: null,
+    low_stock_alerts: [],
+    recent_sales: []
+  },
+  onSuccess: (data) => {
+    console.log("✅ Dashboard data loaded successfully:", data);
+    console.log("📊 Low stock alerts count:", data?.low_stock_alerts?.length || 0);
+    console.log("💰 Revenue:", data?.today_revenue || 0);
+  },
+  onError: (err) => {
+    console.error("❌ Error fetching dashboard:", err);
+    console.error("Error message:", err?.message);
+    console.error("Full error:", err);
+    if(err?.response?.status === 401 || err?.response?.status === 403){
+      // Logout handled by Topbar
+    }
+  }
 })
 
-const [showMenu,setShowMenu] = useState(false)
-const [showPasswordModal,setShowPasswordModal] = useState(false)
-
-const [currentPassword,setCurrentPassword] = useState("")
-const [newPassword,setNewPassword] = useState("")
-
-// ✅ FIX: proper logout
-const handleLogout = () => {
-  console.log("Logging out...")
-  localStorage.clear()
-  sessionStorage.clear()
-  setUser(null)   // force re-render
-  // Force full page reload to login
-  window.location.href = "/"
-}
-
-const handleChangePassword = async () => {
-  try{
-    await api.patch("/users/change-password", { currentPassword, newPassword })
-
-    alert("Password updated successfully")
-
-    setShowPasswordModal(false)
-    setCurrentPassword("")
-    setNewPassword("")
-
-  }catch(err){
-    alert("Password update failed")
-  }
+const dashboardData = data || {
+  today_revenue: 0,
+  revenue_change_percentage: 0,
+  top_product: null,
+  low_stock_alerts: [],
+  recent_sales: []
 }
 
 useEffect(()=>{
-
   // ✅ FIX: now reacts properly when user becomes null
   if(!user || !["admin","manager"].includes(user.role)){
     navigate("/")
     return
   }
-
-  const fetchDashboard = async ()=>{
-
-    try{
-
-      console.log("📊 Fetching dashboard data...");
-      
-      const res = await api.get("/analytics/overview")
-
-      setData(res.data)
-      console.log("📊 Dashboard data updated:", res.data.low_stock_alerts?.length || 0, "low stock alerts");
-
-    }catch(err){
-
-      console.error("Error fetching dashboard:", err)
-
-      if(err.response?.status === 401 || err.response?.status === 403){
-        handleLogout()
-      }
-
-    }
-
-  }
-
-  fetchDashboard()
-
 },[navigate,user]) // depends on user now
 
 // Listen for inventory updates from other components (like PO delivery)
@@ -91,7 +59,7 @@ useEffect(() => {
   const handleInventoryUpdate = (event) => {
     console.log("📊 Dashboard - Inventory updated event received:", event.detail);
     console.log("📊 Refreshing dashboard data due to external update...");
-    fetchDashboard();
+    refetch(); // Use the hook's refetch instead of manual function
   };
 
   window.addEventListener('inventoryUpdated', handleInventoryUpdate);
@@ -99,7 +67,7 @@ useEffect(() => {
   return () => {
     window.removeEventListener('inventoryUpdated', handleInventoryUpdate);
   };
-}, []);
+}, [refetch]);
 
 
 return(
@@ -107,64 +75,9 @@ return(
 <div className="dashboard-container">
 
 <div className="dashboard-header">
-
 <h1 className="dashboard-title">
-Dashboard Overview
+📊<span className="gradient-text">Dashboard Overview</span>
 </h1>
-
-<div className="dashboard-actions">
-
-<div className="user-menu">
-
-<div
-className="user-name"
-onClick={()=>setShowMenu(!showMenu)}
->
-👤 {user?.name} ▾
-</div>
-
-{showMenu && (
-
-<div className="user-dropdown">
-
-<button onClick={(e) => {
-e.preventDefault()
-e.stopPropagation()
-setShowPasswordModal(true)
-setShowMenu(false)
-}}>
-Change Password
-</button>
-
-</div>
-
-)}
-
-</div>
-
-
-{user?.role === "admin" && (
-<button
-className="create-user-btn"
-onClick={()=>navigate("/register")}
->
-Create User
-</button>
-)}
-
-<button
-className="logout-btn"
-onClick={(e) => {
-e.preventDefault()
-e.stopPropagation()
-handleLogout()
-}}
->
-Logout
-</button>
-
-</div>
-
 </div>
 
 <div className="welcome-section">
@@ -172,21 +85,27 @@ Logout
 <p>Here's what's happening with your inventory today.</p>
 </div>
 
+{loading && !data && <div className="loading">Loading dashboard data...</div>}
+{error && <div className="error-message">Error loading dashboard: {error}</div>}
+
+{/* Show dashboard cards if data exists, regardless of loading state */}
+{(data || dashboardData.today_revenue > 0) && (
+<>
 <div className="kpi-container">
 
 <div className="kpi-card">
 <h3>Today's Revenue</h3>
-<p>₹ {data.today_revenue}</p>
+<p>₹ {dashboardData.today_revenue}</p>
 </div>
 
 <div className="kpi-card">
 <h3>Low Stock Alerts</h3>
-<p>{data.low_stock_alerts.length}</p>
+<p>{dashboardData.low_stock_alerts.length}</p>
 </div>
 
 <div className="kpi-card">
 <h3>Top Selling Product</h3>
-<p>{data.top_product?.name || "No data"}</p>
+<p>{dashboardData.top_product?.name || "No data"}</p>
 </div>
 
 </div>
@@ -195,7 +114,7 @@ Logout
 
 <h2>Recent Sales</h2>
 
-{data.recent_sales?.length > 0 ? (
+{dashboardData.recent_sales?.length > 0 ? (
 
 <table className="sales-table">
 
@@ -208,7 +127,7 @@ Logout
 </thead>
 
 <tbody>
-{data.recent_sales.map((sale)=>(
+{dashboardData.recent_sales.map((sale)=>(
 <tr key={sale._id}>
 <td>{sale.product_name}</td>
 <td>{sale.quantity_sold}</td>
@@ -224,44 +143,7 @@ Logout
 )}
 
 </div>
-
-{showPasswordModal && (
-
-<div className="modal-overlay">
-
-<div className="modal">
-
-<h3>Change Password</h3>
-
-<input
-type="password"
-placeholder="Current Password"
-value={currentPassword}
-onChange={(e)=>setCurrentPassword(e.target.value)}
-/>
-
-<input
-type="password"
-placeholder="New Password"
-value={newPassword}
-onChange={(e)=>setNewPassword(e.target.value)}
-/>
-
-<button onClick={handleChangePassword}>
-Update Password
-</button>
-
-<button
-className="cancel-btn"
-onClick={()=>setShowPasswordModal(false)}
->
-Cancel
-</button>
-
-</div>
-
-</div>
-
+</>
 )}
 
 </div>

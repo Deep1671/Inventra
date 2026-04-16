@@ -132,23 +132,6 @@ router.post(
       await order.populate("supplier_id")
       await order.populate("items.product_id")
 
-      // 📧 Send email notification to supplier
-      if (process.env.SEND_EMAILS === 'true' && supplier.email) {
-        try {
-          console.log(`📧 Sending PO email to supplier: ${supplier.email}`);
-          const emailContent = emailService.generatePurchaseOrderEmail(order, supplier)
-          await emailService.sendEmail(
-            supplier.email,
-            `New Purchase Order - ${order.order_number}`,
-            emailContent
-          )
-          console.log(`✅ PO email sent successfully to ${supplier.name}`);
-        } catch (emailError) {
-          console.error(`❌ Failed to send PO email to ${supplier.name}:`, emailError.message);
-          // Don't fail the entire request if email fails
-        }
-      }
-
       res.status(201).json({
         message: "Purchase order created successfully",
         order
@@ -266,36 +249,42 @@ router.patch(
       await order.populate("supplier_id")
       await order.populate("items.product_id")
 
-      // 📧 Send status update email notifications
-      if (process.env.SEND_EMAILS === 'true') {
+      // 📧 Send email notification only when status changes to ORDERED
+      if (process.env.SEND_EMAILS === 'true' && status === "ORDERED" && oldStatus !== "ORDERED") {
         try {
           const supplier = await Supplier.findById(order.supplier_id._id || order.supplier_id)
           
-          // Send email to supplier if they have email
+          // Send email to supplier
           if (supplier && supplier.email) {
-            console.log(`📧 Sending status update email to supplier: ${supplier.email}`);
-            const supplierEmailContent = emailService.generateStatusUpdateEmail(order, supplier, oldStatus, status)
+            console.log(`📧 Sending PO email to supplier: ${supplier.email}`);
+            const emailContent = emailService.generatePurchaseOrderEmail(order, supplier)
             await emailService.sendEmail(
               supplier.email,
-              `PO Status Update - ${order.order_number} [${status}]`,
-              supplierEmailContent
+              `Purchase Order - ${order.order_number}`,
+              emailContent
             )
-            console.log(`✅ Status update email sent to supplier: ${supplier.name}`);
-          }
-
-          // Send notification to admin for important status changes
-          if (['DELIVERED', 'CANCELLED'].includes(status) && process.env.ADMIN_EMAIL) {
-            console.log(`📧 Sending status notification to admin: ${process.env.ADMIN_EMAIL}`);
-            const adminEmailContent = emailService.generateStatusUpdateEmail(order, supplier, oldStatus, status)
-            await emailService.sendEmail(
-              process.env.ADMIN_EMAIL,
-              `PO Status Update - ${order.order_number} [${status}]`,
-              adminEmailContent
-            )
-            console.log(`✅ Status notification sent to admin`);
+            console.log(`✅ PO email sent successfully to ${supplier.name}`);
           }
         } catch (emailError) {
-          console.error(`❌ Failed to send status update emails:`, emailError.message);
+          console.error(`❌ Failed to send PO email:`, emailError.message);
+          // Don't fail the entire request if email fails
+        }
+      }
+
+      // 📧 Send notification to admin for other important status changes
+      if (process.env.SEND_EMAILS === 'true' && ['DELIVERED', 'CANCELLED'].includes(status) && process.env.ADMIN_EMAIL) {
+        try {
+          console.log(`📧 Sending status notification to admin: ${process.env.ADMIN_EMAIL}`);
+          const supplier = await Supplier.findById(order.supplier_id._id || order.supplier_id)
+          const adminEmailContent = emailService.generateStatusUpdateEmail(order, supplier, oldStatus, status)
+          await emailService.sendEmail(
+            process.env.ADMIN_EMAIL,
+            `PO Status Update - ${order.order_number} [${status}]`,
+            adminEmailContent
+          )
+          console.log(`✅ Status notification sent to admin`);
+        } catch (emailError) {
+          console.error(`❌ Failed to send admin notification:`, emailError.message);
           // Don't fail the entire request if email fails
         }
       }

@@ -39,6 +39,38 @@ const userSchema = new mongoose.Schema(
     },
     accountLockedUntil:{
       type:Date
+    },
+    preferences: {
+      theme: {
+        type: String,
+        enum: ["dark", "light"],
+        default: "dark"
+      },
+      language: {
+        type: String,
+        enum: ["en", "es", "fr"],
+        default: "en"
+      },
+      notifications: {
+        email: {
+          type: Boolean,
+          default: true
+        },
+        orders: {
+          type: Boolean,
+          default: true
+        },
+        stock: {
+          type: Boolean,
+          default: true
+        }
+      }
+    },
+    security: {
+      twoFactorEnabled: {
+        type: Boolean,
+        default: false
+      }
     }
   },
   { timestamps: true }

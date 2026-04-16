@@ -5,7 +5,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   background: #2c3e50;
   min-height: 100vh;
-  color: #ffffff;
+  color: #c16868;
 }
 
 #root {
@@ -43,7 +43,7 @@ body {
 
 .card {
   padding: 2em;
-  background: white;
+  background: rgb(196, 61, 61);
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }

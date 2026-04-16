@@ -1,5 +1,8 @@
 import { useState } from "react"
 import axios from "axios"
+import { Link } from "react-router-dom"
+import logo from "../assets/Inventra.png"
+import "../styles/authRecovery.css"
 
 function ForgotPassword(){
 
@@ -36,33 +39,39 @@ function ForgotPassword(){
   }
 
   return(
+    <div className="recovery-page">
+      <div className="recovery-card">
+        <img src={logo} alt="Inventra" className="recovery-logo" />
 
-    <div style={{padding:"40px"}}>
+        <div className="recovery-header">
+          <p className="eyebrow">Account Recovery</p>
+          <h2>Forgot your password?</h2>
+          <p>Enter your email and we will send you a reset link.</p>
+        </div>
 
-      <h2>Forgot Password</h2>
+        <form onSubmit={handleSubmit} className="recovery-form">
+          <label htmlFor="email">Email address</label>
+          <input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e)=>setEmail(e.target.value)}
+            required
+          />
 
-      <form onSubmit={handleSubmit}>
+          {message && <div className="recovery-message">{message}</div>}
 
-        <input
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e)=>setEmail(e.target.value)}
-          required
-        />
+          <button type="submit" disabled={loading} className="recovery-btn">
+            {loading ? "Sending..." : "Send Reset Link"}
+          </button>
+        </form>
 
-        <br/><br/>
-
-        <button type="submit" disabled={loading}>
-          {loading ? "Sending..." : "Send Reset Link"}
-        </button>
-
-      </form>
-
-      {message && <p>{message}</p>}
-
+        <div className="recovery-footer">
+          <Link to="/" className="recovery-link">Back to login</Link>
+        </div>
+      </div>
     </div>
-
   )
 
 }

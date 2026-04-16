@@ -68,5 +68,14 @@ const supplierSchema = new mongoose.Schema(
   { timestamps: true }
 )
 
+// ====================================
+// PERFORMANCE INDEXES
+// ====================================
+supplierSchema.index({ name: 1 });                              // Search by name
+supplierSchema.index({ email: 1 });                             // Email lookups
+supplierSchema.index({ is_active: 1 });                         // Filter active suppliers
+supplierSchema.index({ balance_due: 1 });                       // Payment analysis
+supplierSchema.index({ createdAt: -1 });                        // Recent suppliers
+
 module.exports = mongoose.model("Supplier", supplierSchema)
 

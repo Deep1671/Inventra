@@ -9,81 +9,11 @@ const emailService = require("./emailService")
 // ====================================
 
 // Send consolidated daily emails to suppliers
+// NOTE: DISABLED - Emails are now only sent when status is explicitly changed to ORDERED
 const sendDailySupplierEmails = async () => {
   try {
-    if (process.env.SEND_EMAILS !== 'true') {
-      console.log("📧 Email sending disabled");
-      return;
-    }
-
-    console.log("📧 Starting daily supplier email process...");
-    
-    // Get all PENDING POs created in last 24 hours
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    
-    const pendingPOs = await PurchaseOrder.find({
-      status: "PENDING",
-      createdAt: { $gte: yesterday }
-    }).populate("supplier_id").populate("items.product_id");
-
-    if (pendingPOs.length === 0) {
-      console.log("✅ No pending orders found for daily email");
-      return;
-    }
-
-    // Group POs by supplier
-    const supplierGroups = {};
-    pendingPOs.forEach(po => {
-      const supplierId = po.supplier_id._id.toString();
-      if (!supplierGroups[supplierId]) {
-        supplierGroups[supplierId] = {
-          supplier: po.supplier_id,
-          orders: [],
-          totalItems: 0,
-          totalAmount: 0
-        };
-      }
-      supplierGroups[supplierId].orders.push(po);
-      supplierGroups[supplierId].totalItems += po.items.length;
-      supplierGroups[supplierId].totalAmount += po.total_amount;
-    });
-
-    console.log(`📊 Found orders for ${Object.keys(supplierGroups).length} suppliers`);
-
-    // Send consolidated email to each supplier
-    for (const [supplierId, group] of Object.entries(supplierGroups)) {
-      if (group.supplier.email) {
-        try {
-          console.log(`📧 Sending daily email to ${group.supplier.name} (${group.orders.length} orders)`);
-          
-          const emailContent = emailService.generateDailySupplierEmail(group.supplier, group.orders);
-          await emailService.sendEmail(
-            group.supplier.email,
-            `📋 Daily Order Summary - ${group.orders.length} Purchase Orders`,
-            emailContent
-          );
-
-          // Update PO status to ORDERED (email sent)
-          const poIds = group.orders.map(po => po._id);
-          await PurchaseOrder.updateMany(
-            { _id: { $in: poIds } },
-            { 
-              status: "ORDERED",
-              order_sent_date: new Date()
-            }
-          );
-
-          console.log(`✅ Email sent to ${group.supplier.name}, ${group.orders.length} POs marked as ORDERED`);
-        } catch (emailError) {
-          console.error(`❌ Failed to send email to ${group.supplier.name}:`, emailError.message);
-        }
-      } else {
-        console.log(`⚠️  No email for supplier: ${group.supplier.name}`);
-      }
-    }
-
-    console.log(`✅ Daily supplier email process completed`);
+    console.log("ℹ️  Daily supplier email automation is disabled. Emails are sent when PO status is manually changed to ORDERED.");
+    return;
   } catch (error) {
     console.error("❌ Error in daily supplier email process:", error);
   }
@@ -248,32 +178,120 @@ const triggerDailySupplierEmails = async (req, res) => {
   }
 };
 
+// Send reminders to admin for orders not delivered after 2 days
+const sendDeliveryReminders = async () => {
+  try {
+    if (process.env.SEND_EMAILS !== 'true' || !process.env.ADMIN_EMAIL) {
+      console.log("📧 Email sending disabled or admin email not configured");
+      return;
+    }
+
+    console.log("📬 Checking for undelivered orders to send reminders...");
+    
+    const SalesOrder = require("../models/salesOrder");
+    const PurchaseOrder = require("../models/purchaseOrder");
+    const Supplier = require("../models/supplier");
+    
+    // Date 2 days ago
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+    // Find undelivered Purchase Orders created 2+ days ago
+    const pendingPOs = await PurchaseOrder.find({
+      status: { $in: ["PENDING", "ORDERED"] },
+      createdAt: { $lte: twoDaysAgo }
+    }).populate("supplier_id").populate("items.product_id");
+
+    // Find incomplete Sales Orders created 2+ days ago
+    const incompleteSOs = await SalesOrder.find({
+      status: { $in: ["DRAFT", "CONFIRMED", "PROCESSING"] },
+      order_date: { $lte: twoDaysAgo }
+    });
+
+    if (pendingPOs.length === 0 && incompleteSOs.length === 0) {
+      console.log("✅ No pending orders requiring reminders");
+      return;
+    }
+
+    console.log(`📬 Found ${pendingPOs.length} pending POs and ${incompleteSOs.length} incomplete SOs`);
+
+    // Check if reminder was already sent in last 2 days
+    const reminderCheckTime = new Date();
+    reminderCheckTime.setDate(reminderCheckTime.getDate() - 2);
+
+    const poNeedingReminders = pendingPOs.filter(po => 
+      !po.last_reminder_sent || po.last_reminder_sent < reminderCheckTime
+    );
+
+    const soNeedingReminders = incompleteSOs.filter(so => 
+      !so.last_reminder_sent || so.last_reminder_sent < reminderCheckTime
+    );
+
+    if (poNeedingReminders.length === 0 && soNeedingReminders.length === 0) {
+      console.log("✅ All pending orders already have recent reminders");
+      return;
+    }
+
+    console.log(`📬 Sending reminders for ${poNeedingReminders.length} POs and ${soNeedingReminders.length} SOs`);
+
+    // Generate email content
+    const emailContent = emailService.generateDeliveryReminderEmail(
+      poNeedingReminders,
+      soNeedingReminders
+    );
+
+    // Send email to admin
+    await emailService.sendEmail(
+      process.env.ADMIN_EMAIL,
+      `⏰ REMINDER: ${poNeedingReminders.length + soNeedingReminders.length} Orders Not Delivered (2+ Days Old)`,
+      emailContent
+    );
+
+    // Update reminder sent date and count
+    const poIds = poNeedingReminders.map(po => po._id);
+    const soIds = soNeedingReminders.map(so => so._id);
+
+    if (poIds.length > 0) {
+      await PurchaseOrder.updateMany(
+        { _id: { $in: poIds } },
+        { 
+          last_reminder_sent: new Date(),
+          $inc: { reminder_count: 1 }
+        }
+      );
+    }
+
+    if (soIds.length > 0) {
+      await SalesOrder.updateMany(
+        { _id: { $in: soIds } },
+        { 
+          last_reminder_sent: new Date(),
+          $inc: { reminder_count: 1 }
+        }
+      );
+    }
+
+    console.log(`✅ Delivery reminder email sent to admin`);
+  } catch (error) {
+    console.error("❌ Error sending delivery reminders:", error);
+  }
+};
+
 // Initialize automated email system
 const initializeEmailAutomation = () => {
   console.log("🔄 Initializing enhanced email automation system...");
   
   if (process.env.SEND_EMAILS === 'true') {
-    // Daily supplier emails at 11:00 AM (every 24 hours)
+    // Auto-create POs for low stock every day at 10:45 AM
     const now = new Date();
-    const todayAt11AM = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12,0,0);
+    const todayAt1045AM = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 45, 0);
     
-    // If it's past 11:00 AM today, schedule for tomorrow
-    if (now > todayAt11AM) {
-      todayAt11AM.setDate(todayAt11AM.getDate() + 1);
+    // If it's past 10:45 AM today, schedule for tomorrow
+    if (now > todayAt1045AM) {
+      todayAt1045AM.setDate(todayAt1045AM.getDate() + 1);
     }
     
-    const timeUntil11AM = todayAt11AM.getTime() - now.getTime();
-    
-    // Schedule first run
-    setTimeout(() => {
-      sendDailySupplierEmails();
-      // Then repeat every 24 hours
-      setInterval(sendDailySupplierEmails, 24 * 60 * 60 * 1000);
-    }, timeUntil11AM);
-    
-    // Auto-create POs for low stock every day at 10:45 AM (15 minutes before emails)
-    const autoCreateTime = new Date(todayAt11AM.getTime()-15*60*1000); // 10:45 AM
-    const timeUntil1045AM = autoCreateTime.getTime() - now.getTime();
+    const timeUntil1045AM = todayAt1045AM.getTime() - now.getTime();
     
     setTimeout(() => {
       autoCreatePOsForLowStock();
@@ -282,11 +300,17 @@ const initializeEmailAutomation = () => {
     
     // Low stock alerts every 6 hours
     setInterval(sendLowStockAlertEmails, 6 * 60 * 60 * 1000);
+
+    // Delivery reminders every 2 days
+    // Run immediately and then every 48 hours
+    sendDeliveryReminders();
+    setInterval(sendDeliveryReminders, 2 * 24 * 60 * 60 * 1000);
     
     console.log(`✅ Email automation scheduled:`);
-    console.log(`   📧 Daily supplier emails: Every day at 11:00 AM`);
+    console.log(`   ℹ️  Daily supplier emails: DISABLED (sent only when PO status changed to ORDERED)`);
     console.log(`   🤖 Auto-create POs: Every day at 10:45 AM`);
     console.log(`   🚨 Low stock alerts: Every 6 hours`);
+    console.log(`   📬 Delivery reminders: Every 2 days`);
   } else {
     console.log("📧 Email automation disabled in environment");
   }
@@ -298,5 +322,6 @@ module.exports = {
   sendLowStockAlertEmails,
   checkAndSendLowStockAlerts,
   triggerDailySupplierEmails,
+  sendDeliveryReminders,
   initializeEmailAutomation
 }

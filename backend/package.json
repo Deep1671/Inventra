@@ -9,13 +9,17 @@
     "migrate-sales": "node scripts/migrateSales.js",
     "seed:suppliers": "node scripts/seedSuppliers.js",
     "seed:products": "node scripts/seedProducts.js",
-    "seed:all": "node scripts/seedSuppliers.js && node scripts/seedProducts.js"
+    "seed:sales3years": "node scripts/seedSales3Years.js",
+    "seed:all": "node scripts/seedSuppliers.js && node scripts/seedProducts.js",
+    "fix:performance": "node scripts/fixPerformanceData.js",
+    "fix:comprehensive": "node scripts/fixComprehensive.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "axios": "^1.13.6",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
@@ -25,7 +29,6 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.3.0",
     "nodemailer": "^8.0.2",
-    "razorpay": "^2.9.6",
     "recharts": "^3.7.0"
   },
   "devDependencies": {

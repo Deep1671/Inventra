@@ -13,8 +13,11 @@ router.use(roleMiddleware(["admin","manager"]))
 // Handles both single-item and multi-item sales
 // ====================================
 
-// Get all sales (unified view of quick sales + multi-item orders)
-router.get("/", unifiedSalesController.getAllSales)
+// Get all sales orders (for UnifiedSales dashboard - order-level view)
+router.get("/", unifiedSalesController.getSalesOrders)
+
+// Get all line items (for sales.jsx - individual items view)
+router.get("/line-items", unifiedSalesController.getAllSalesLineItems)
 
 // Create quick sale (single item, immediate completion)
 router.post("/quick", unifiedSalesController.createQuickSale)
