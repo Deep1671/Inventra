@@ -1,0 +1,368 @@
+/* PAGE */
+
+body {
+  margin: 0;
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+/* MAIN CONTAINER */
+
+.sales-page {
+  padding: 35px;
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+}
+
+.sales-page::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 1;
+  background: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+              radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);;
+  z-index: 0;
+}
+
+.sales-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* MAIN HEADING */
+
+.sales-page > h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 30px;
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* SALE FORM SECTION */
+
+.sale-form {
+  background: white;
+  padding: 30px;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  margin-bottom: 35px;
+  border-left: 5px solid #6366f1;
+  transition: all 0.3s ease;
+}
+
+.sale-form:hover {
+  box-shadow: 0 15px 40px rgba(99, 102, 241, 0.15);
+  transform: translateY(-2px);
+}
+
+.sale-form h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sale-form h2::before {
+  content: "";
+  width: 4px;
+  height: 24px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 2px;
+}
+
+.sale-form form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 15px;
+  align-items: end;
+}
+
+/* FORM INPUTS */
+
+.sale-form select,
+.sale-form input {
+  padding: 12px 14px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  background-color: white;
+  color: #374151;
+}
+
+.sale-form select:focus,
+.sale-form input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.sale-form select {
+  cursor: pointer;
+}
+
+.sale-form select option {
+  padding: 10px;
+  color: #374151;
+  background: white;
+}
+
+/* FORM BUTTON */
+
+.sale-form button {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  white-space: nowrap;
+}
+
+.sale-form button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+}
+
+.sale-form button:active {
+  transform: translateY(0);
+}
+
+/* SALES TABLE SECTION */
+
+.sales-table-container {
+  background: white;
+  padding: 30px;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sales-table-container h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sales-table-container h2::before {
+  content: "";
+  width: 4px;
+  height: 24px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 2px;
+}
+
+/* TABLE */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+}
+
+table thead {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white;
+}
+
+table th {
+  padding: 16px 14px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+table td {
+  padding: 14px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+  color: #374151;
+  text-align: center;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+table tbody tr {
+  transition: all 0.2s ease;
+}
+
+table tbody tr:hover {
+  background: linear-gradient(90deg, #f9fafb 0%, #f3f4f6 100%);
+}
+
+table tbody tr:hover td {
+  color: #6366f1;
+  font-weight: 500;
+}
+
+/* EMPTY STATE */
+
+table tbody tr td[colspan] {
+  padding: 40px 14px;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* PAGINATION */
+
+.pagination {
+  margin-top: 25px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.pagination button {
+  padding: 10px 16px;
+  border: 2px solid #e5e7eb;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  color: #374151;
+  transition: all 0.3s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+  border-color: #6366f1;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  transform: translateY(-2px);
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+}
+
+.pagination span {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6366f1;
+  padding: 0 8px;
+  min-width: 130px;
+  text-align: center;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1024px) {
+  .sale-form form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .sale-form button {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .sales-page {
+    padding: 20px;
+  }
+
+  .sale-form {
+    padding: 20px;
+  }
+
+  .sales-table-container {
+    padding: 20px;
+  }
+
+  .sale-form form {
+    grid-template-columns: 1fr;
+  }
+
+  .sales-page > h1 {
+    font-size: 26px;
+    margin-bottom: 20px;
+  }
+
+  table th,
+  table td {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .pagination button,
+  .pagination span {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .sales-page {
+    padding: 15px;
+  }
+
+  .sale-form {
+    padding: 15px;
+  }
+
+  .sales-table-container {
+    padding: 15px;
+  }
+
+  .sales-page > h1 {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+
+  table {
+    font-size: 12px;
+  }
+
+  table th,
+  table td {
+    padding: 8px 4px;
+  }
+
+  .sale-form h2,
+  .sales-table-container h2 {
+    font-size: 18px;
+  }
+}

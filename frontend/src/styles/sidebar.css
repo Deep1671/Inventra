@@ -1,0 +1,350 @@
+/* SIDEBAR CONTAINER */
+
+.sidebar {
+  width: 250px;
+  background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 50%, #1d4ed8 100%);
+  color: white;
+  min-height: 100vh;
+  padding: 25px 0;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.5) transparent;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.5);
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.8);
+}
+
+/* LOGO SECTION */
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px 40px 20px;
+  border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-logo::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width:200%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  50% {
+    left: 100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.sidebar-logo img {
+  width: 100%;
+  height: 200%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.3)) brightness(1.2);
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.sidebar-logo img:hover {
+  filter: drop-shadow(0 6px 16px rgba(59, 130, 246, 0.5)) brightness(1.3);
+  transform: scale(1.05);
+}
+
+/* MENU */
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 30px 15px;
+  flex: 1;
+}
+
+.sidebar-menu a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #d1d5db;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-menu a::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.sidebar-menu a:hover {
+  background: rgba(59, 130, 246, 0.15);
+  color: #ffffff;
+  padding-left: 22px;
+  box-shadow: inset 0 0 20px rgba(59, 130, 246, 0.1);
+}
+
+.sidebar-menu a:hover::before {
+  left: 100%;
+}
+
+/* ACTIVE LINK */
+
+.sidebar-menu a.active {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.1);
+  position: relative;
+  font-weight: 600;
+}
+
+.sidebar-menu a.active::after {
+  content: "";
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 12px solid #3b82f6;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+}
+
+/* MENU LINK ICONS */
+
+.sidebar-menu a span {
+  font-size: 18px;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-menu a:hover span {
+  transform: scale(1.2) rotate(5deg);
+}
+
+.sidebar-menu a.active span {
+  animation: bounce 0.6s ease;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.3) rotate(10deg);
+  }
+}
+
+/* DIVIDER */
+
+.sidebar-menu::after {
+  content: "";
+  margin-top: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
+}
+
+/* FOOTER AREA */
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 20px 15px 15px;
+  border-top: 1px solid rgba(59, 130, 246, 0.2);
+  font-size: 12px;
+  color: #cbd5e1;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.sidebar-footer a {
+  color: #3b82f6;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.sidebar-footer a:hover {
+  color: #60a5fa;
+  text-decoration: underline;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+  .sidebar {
+    width: 220px;
+    padding: 20px 0;
+  }
+
+  .sidebar-logo img {
+    width: 100px;
+    height: 100px;
+  }
+
+  .sidebar-menu a {
+    padding: 12px 14px;
+    font-size: 14px;
+    gap: 12px;
+  }
+
+  .sidebar-menu a span {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 200px;
+    padding: 15px 0;
+  }
+
+  .sidebar-logo {
+    padding: 0 15px 30px 15px;
+  }
+
+  .sidebar-logo img {
+    width: 90px;
+    height: 90px;
+  }
+
+  .sidebar-menu {
+    padding: 20px 10px;
+    gap: 5px;
+  }
+
+  .sidebar-menu a {
+    padding: 10px 12px;
+    font-size: 13px;
+    gap: 10px;
+  }
+
+  .sidebar-menu a span {
+    font-size: 15px;
+  }
+
+  .sidebar-menu a:hover {
+    padding-left: 16px;
+  }
+
+  .sidebar-menu a.active::after {
+    display: none;
+  }
+
+  .sidebar-menu a.active {
+    margin-left: 5px;
+    margin-right: 5px;
+  }
+
+  .sidebar-footer {
+    font-size: 11px;
+    padding: 15px 10px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: 70px;
+    padding: 10px 0;
+  }
+
+  .sidebar-logo {
+    padding: 0 10px 20px 10px;
+    border-bottom: none;
+    justify-content: center;
+  }
+
+  .sidebar-logo img {
+    width: 50px;
+    height: 50px;
+  }
+
+  .sidebar-menu {
+    padding: 15px 5px;
+    gap: 3px;
+  }
+
+  .sidebar-menu a {
+    padding: 12px 8px;
+    font-size: 0;
+    gap: 0;
+    justify-content: center;
+    color: transparent;
+  }
+
+  .sidebar-menu a span {
+    font-size: 20px;
+  }
+
+  .sidebar-menu a span::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 80px;
+    background: rgba(99, 102, 241, 0.9);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .sidebar-menu a:hover span::before {
+    opacity: 1;
+  }
+
+  .sidebar-footer {
+    display: none;
+  }
+
+  .sidebar-menu a.active::after {
+    display: none;
+  }
+
+  .sidebar-menu a.active {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+  }
+}

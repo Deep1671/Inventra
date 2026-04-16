@@ -13,12 +13,32 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true
+      default: null
+    },
+    provider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local"
     },
     role: {
       type: String,
       enum: ["admin", "manager"],
       default: "manager"
+    },
+
+    passwordResetToken:{
+      type:String
+    },
+
+    passwordResetExpires:{
+      type:Date
+    },
+    failedLoginAttempts:{
+      type:Number,
+      default:0
+    },
+    accountLockedUntil:{
+      type:Date
     }
   },
   { timestamps: true }

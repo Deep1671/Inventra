@@ -1,0 +1,59 @@
+<svg viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Define gradients -->
+  <defs>
+    <linearGradient id="logoGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a78bfa;stop-opacity:1" />
+    </linearGradient>
+
+    <linearGradient id="accentGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="120" fill="none"/>
+
+  <!-- Logo Icon -->
+  <g transform="translate(40, 60)">
+    <!-- Background circle -->
+    <circle cx="0" cy="0" r="50" fill="none" stroke="url(#logoGradient2)" stroke-width="1.5" opacity="0.2"/>
+
+    <!-- Smart nodes -->
+    <circle cx="-24" cy="-24" r="3" fill="url(#logoGradient2)"/>
+    <circle cx="24" cy="-24" r="3" fill="url(#logoGradient2)"/>
+    <circle cx="-24" cy="24" r="3" fill="url(#logoGradient2)"/>
+    <circle cx="24" cy="24" r="3" fill="url(#logoGradient2)"/>
+
+    <!-- Connection lines -->
+    <line x1="-24" y1="-24" x2="24" y2="-24" stroke="url(#accentGradient2)" stroke-width="1" opacity="0.6"/>
+    <line x1="-24" y1="-24" x2="-24" y2="24" stroke="url(#accentGradient2)" stroke-width="1" opacity="0.6"/>
+    <line x1="24" y1="-24" x2="24" y2="24" stroke="url(#accentGradient2)" stroke-width="1" opacity="0.6"/>
+    <line x1="-24" y1="24" x2="24" y2="24" stroke="url(#accentGradient2)" stroke-width="1" opacity="0.6"/>
+    <line x1="-24" y1="-24" x2="24" y2="24" stroke="url(#accentGradient2)" stroke-width="1" opacity="0.4"/>
+    <line x1="24" y1="-24" x2="-24" y2="24" stroke="url(#accentGradient2)" stroke-width="1" opacity="0.4"/>
+
+    <!-- Center box -->
+    <rect x="-12" y="-12" width="24" height="24" fill="none" stroke="url(#logoGradient2)" stroke-width="1.5" rx="3"/>
+
+    <!-- Inner lines -->
+    <path d="M -8 -4 L 8 -4 M -8 0 L 8 0 M -8 4 L 8 4" stroke="url(#logoGradient2)" stroke-width="1" opacity="0.7" stroke-linecap="round"/>
+
+    <!-- Corner accents -->
+    <circle cx="-14" cy="-14" r="1.5" fill="url(#accentGradient2)" opacity="0.8"/>
+    <circle cx="14" cy="-14" r="1.5" fill="url(#accentGradient2)" opacity="0.8"/>
+    <circle cx="-14" cy="14" r="1.5" fill="url(#accentGradient2)" opacity="0.8"/>
+    <circle cx="14" cy="14" r="1.5" fill="url(#accentGradient2)" opacity="0.8"/>
+  </g>
+
+  <!-- Text: Inventra -->
+  <text x="110" y="70" font-family="Inter, Segoe UI, sans-serif" font-size="42" font-weight="700" letter-spacing="-0.5" fill="url(#logoGradient2)">
+    Inventra
+  </text>
+
+  <!-- Subtitle -->
+  <text x="110" y="95" font-family="Inter, Segoe UI, sans-serif" font-size="12" font-weight="500" fill="#94a3b8" letter-spacing="0.5">
+    SMART INVENTORY MANAGEMENT
+  </text>
+</svg>

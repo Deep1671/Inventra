@@ -1,0 +1,639 @@
+/* PAGE */
+
+body {
+  margin: 0;
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+/* WRAPPER */
+
+.users-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.users-container {
+  padding: 40px;
+  flex: 1;
+  position: relative;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  overflow-y: auto;
+}
+
+.users-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+              radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+  opacity: 1;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.users-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* HEADER */
+
+.users-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 35px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.users-container h2 {
+  font-size: 36px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+/* HEADER ACTIONS */
+
+.users-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* USER NAME */
+
+.user-name {
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* LOGOUT BUTTON */
+
+.logout-btn {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  padding: 12px 22px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.logout-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.logout-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+}
+
+.logout-btn:hover::before {
+  left: 100%;
+}
+
+/* TABLE WRAPPER */
+
+.table-wrapper {
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  animation: slideUp 0.6s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* TABLE */
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  text-align: center;
+}
+
+.users-table thead {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white;
+}
+
+.users-table th {
+  padding: 18px 14px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.users-table td {
+  padding: 16px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+  color: #374151;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.users-table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.users-table tbody tr:hover {
+  background: linear-gradient(90deg, #f9fafb 0%, #f3f4f6 100%);
+}
+
+.users-table tbody tr:hover td {
+  color: #6366f1;
+  font-weight: 500;
+}
+
+/* ROLE BADGES */
+
+.role-admin {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.role-manager {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+}
+
+.role-user {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+/* ACTION BUTTONS */
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.delete-btn,
+.reset-btn {
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.delete-btn {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.delete-btn::before,
+.reset-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.delete-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(239, 68, 68, 0.3);
+}
+
+.delete-btn:hover::before {
+  left: 100%;
+}
+
+.reset-btn {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.reset-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);
+}
+
+.reset-btn:hover::before {
+  left: 100%;
+}
+
+/* NO DATA MESSAGE */
+
+.no-data {
+  text-align: center;
+  padding: 60px 20px;
+  color: #9ca3af;
+  font-size: 16px;
+  font-style: italic;
+}
+
+/* LOADING */
+
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+  font-size: 16px;
+  font-weight: 500;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* MODAL */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  background: white;
+  padding: 35px;
+  border-radius: 14px;
+  width: 90%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  animation: slideDown 0.3s ease;
+  border-top: 4px solid #6366f1;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal h3 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 16px 0;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.modal input {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 2px solid #e5e7eb;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  background: white;
+  color: #374151;
+}
+
+.modal input::placeholder {
+  color: #9ca3af;
+}
+
+.modal input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.modal button {
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.modal button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+}
+
+.modal button:active {
+  transform: translateY(0);
+}
+
+.cancel-btn {
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+}
+
+.cancel-btn:hover {
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4) !important;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1200px) {
+  .users-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .users-container h2 {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 900px) {
+  .users-wrapper {
+    flex-direction: column;
+  }
+
+  .users-container {
+    padding: 25px;
+  }
+
+  .users-header {
+    gap: 12px;
+    margin-bottom: 25px;
+  }
+
+  .users-container h2 {
+    font-size: 24px;
+  }
+
+  .user-name {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .logout-btn {
+    padding: 10px 18px;
+    font-size: 13px;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 12px 8px;
+    font-size: 12px;
+  }
+
+  .users-table th {
+    font-size: 11px;
+  }
+
+  .delete-btn,
+  .reset-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .role-admin,
+  .role-manager,
+  .role-user {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 768px) {
+  .users-container {
+    padding: 20px;
+  }
+
+  .users-header {
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .users-container h2 {
+    font-size: 22px;
+  }
+
+  .user-name {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .logout-btn {
+    padding: 10px 16px;
+    font-size: 12px;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 10px 6px;
+    font-size: 11px;
+  }
+
+  .users-table th {
+    font-size: 10px;
+  }
+
+  .delete-btn,
+  .reset-btn {
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+
+  .role-admin,
+  .role-manager,
+  .role-user {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .modal {
+    max-width: 85%;
+    padding: 25px;
+  }
+
+  .modal h3 {
+    font-size: 18px;
+  }
+
+  .modal input,
+  .modal button {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .users-container {
+    padding: 15px;
+  }
+
+  .users-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .users-container h2 {
+    font-size: 18px;
+  }
+
+  .users-actions {
+    flex-direction: column;
+  }
+
+  .user-name,
+  .logout-btn {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .users-table {
+    font-size: 10px;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 8px 4px;
+  }
+
+  .users-table th {
+    font-size: 9px;
+    padding: 10px 4px;
+  }
+
+  .delete-btn,
+  .reset-btn {
+    padding: 5px 6px;
+    font-size: 9px;
+  }
+
+  .action-buttons {
+    gap: 4px;
+  }
+
+  .role-admin,
+  .role-manager,
+  .role-user {
+    padding: 3px 6px;
+    font-size: 9px;
+  }
+
+  .modal {
+    max-width: 95%;
+    padding: 20px;
+  }
+
+  .modal h3 {
+    font-size: 16px;
+  }
+
+  .modal input,
+  .modal button {
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  .no-data,
+  .loading-state {
+    padding: 40px 15px;
+    font-size: 13px;
+  }
+}

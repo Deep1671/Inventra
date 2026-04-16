@@ -45,6 +45,21 @@ const productSchema = new mongoose.Schema(
     lead_time_days: {
       type: Number,
       required: true
+    },
+    preferred_supplier_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Supplier",
+      default: null
+    },
+    low_stock_threshold: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    reorder_quantity: {
+      type: Number,
+      default: 0,
+      min: 0
     }
   },
   {

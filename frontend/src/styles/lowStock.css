@@ -1,0 +1,457 @@
+/* ============================================
+   LOW STOCK ALERTS & INDICATORS CSS
+   ============================================ */
+
+/* ===================================
+   LOW STOCK BADGE & STATUS
+   =================================== */
+
+.low-stock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.1);
+}
+
+.low-stock-badge::before {
+  content: '⚠️';
+  font-size: 0.875rem;
+}
+
+.low-stock-indicator {
+  width: 8px;
+  height: 8px;
+  background: #dc2626;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+/* ===================================
+   ALERT CARDS
+   =================================== */
+
+.alert-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(220, 38, 38, 0.1);
+  border: 1px solid #fecaca;
+  border-left: 4px solid #dc2626;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.alert-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #dc2626, #ef4444, #f87171);
+  animation: alert-shimmer 3s infinite;
+}
+
+@keyframes alert-shimmer {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.alert-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(220, 38, 38, 0.2);
+  border-color: #f87171;
+}
+
+.alert-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.alert-card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.alert-status {
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+  color: white;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+}
+
+.alert-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.alert-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.alert-stat:last-child {
+  border-bottom: none;
+}
+
+.alert-stat-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.alert-stat-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.alert-stat-value.critical {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.alert-stat-value.warning {
+  color: #f59e0b;
+  font-weight: 700;
+}
+
+/* ===================================
+   LOW STOCK TABLE ROWS
+   =================================== */
+
+.table-row.low-stock {
+  background: linear-gradient(135deg, #fef2f2 0%, #fef7f7 100%);
+  border-left: 4px solid #dc2626;
+}
+
+.table-row.low-stock:hover {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+}
+
+.stock-level {
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-align: center;
+  min-width: 60px;
+}
+
+.stock-level.critical {
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+  color: white;
+  animation: pulse-critical 2s infinite;
+}
+
+.stock-level.low {
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+  color: white;
+}
+
+.stock-level.medium {
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  color: white;
+}
+
+.stock-level.healthy {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  color: white;
+}
+
+@keyframes pulse-critical {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+  }
+}
+
+/* ===================================
+   ALERT ACTIONS
+   =================================== */
+
+.alert-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.btn-create-po {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.btn-create-po:hover {
+  background: linear-gradient(135deg, #047857 0%, #059669 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+.btn-dismiss {
+  background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-dismiss:hover {
+  background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+  transform: translateY(-1px);
+}
+
+/* ===================================
+   LOW STOCK SUMMARY CARDS
+   =================================== */
+
+.low-stock-summary {
+  background: linear-gradient(135deg, #fef2f2 0%, #fef7f7 100%);
+  border: 1px solid #fecaca;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.1);
+}
+
+.low-stock-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.low-stock-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: white;
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+}
+
+.low-stock-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.low-stock-count {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #dc2626;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.low-stock-description {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ===================================
+   EMPTY STATE
+   =================================== */
+
+.low-stock-empty {
+  text-align: center;
+  padding: 3rem;
+  background: linear-gradient(135deg, #f0fdf4 0%, #f7fee7 100%);
+  border: 2px dashed #bbf7d0;
+  border-radius: 1rem;
+}
+
+.low-stock-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.7;
+}
+
+.low-stock-empty-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #059669;
+  margin-bottom: 0.5rem;
+}
+
+.low-stock-empty-text {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* ===================================
+   NOTIFICATION OVERLAY
+   =================================== */
+
+.low-stock-notification {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background: linear-gradient(135deg, #fef2f2 0%, white 100%);
+  border: 1px solid #fecaca;
+  border-left: 4px solid #dc2626;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  z-index: 1000;
+  animation: slideIn 0.3s ease-out;
+}
+
+.low-stock-notification-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.low-stock-notification-icon {
+  color: #dc2626;
+  font-size: 1.125rem;
+}
+
+.low-stock-notification-title {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.low-stock-notification-message {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ===================================
+   RESPONSIVE DESIGN
+   =================================== */
+
+@media (max-width: 768px) {
+  .alert-card {
+    padding: 1rem;
+  }
+  
+  .alert-card-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  
+  .alert-actions {
+    flex-direction: column;
+  }
+  
+  .btn-create-po,
+  .btn-dismiss {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .low-stock-notification {
+    left: 1rem;
+    right: 1rem;
+    max-width: none;
+  }
+  
+  .low-stock-count {
+    font-size: 2rem;
+  }
+}
+
+/* ===================================
+   ACCESSIBILITY
+   =================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .low-stock-indicator,
+  .alert-card::before,
+  .stock-level.critical {
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .alert-card {
+    border-width: 2px;
+    border-color: #dc2626;
+  }
+  
+  .low-stock-badge {
+    border-width: 2px;
+  }
+  
+  .stock-level {
+    border: 2px solid currentColor;
+  }
+}

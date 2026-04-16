@@ -4,118 +4,100 @@ const router = express.Router()
 const Sale = require("../models/sale")
 const Product = require("../models/product")
 
-router.get("/dashboard", async (req, res) => {
-  try {
+const authMiddleware = require("../middleware/authmiddleware")
+const roleMiddleware = require("../middleware/rolemiddleware")
 
-    // TOTAL SALES
-    const totals = await Sale.aggregate([
-      {
-        $group: {
-          _id: null,
-          total_revenue: { $sum: "$revenue" },
-          total_quantity_sold: { $sum: "$quantity_sold" }
-        }
-      }
-    ])
+router.use(authMiddleware)
+router.use(roleMiddleware(["admin","manager"]))
 
-    const totalRevenue = totals[0]?.total_revenue || 0
-    const totalQuantity = totals[0]?.total_quantity_sold || 0
+router.get("/overview", async (req,res)=>{
 
-    // AVERAGE DAILY SALES
-    const avgDaily = await Sale.aggregate([
-      {
-        $group: {
-          _id: {
-            year: { $year: "$date" },
-            month: { $month: "$date" },
-            day: { $dayOfMonth: "$date" }
-          },
-          total: { $sum: "$quantity_sold" }
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          avg_daily_sales: { $avg: "$total" }
-        }
-      }
-    ])
+try{
 
-    const avgDailySales = avgDaily[0]?.avg_daily_sales || 0
+/* TODAY REVENUE */
 
-    // TOP PRODUCTS BY QUANTITY
-    const topProductsQty = await Sale.aggregate([
-  {
-    $group: {
-      _id: "$metadata.product_id",
-      totalQuantity: { $sum: "$quantity_sold" }
-    }
-  },
-  { $sort: { totalQuantity: -1 } },
-  { $limit: 5 },
-  {
-    $lookup: {
-      from: "products",
-      localField: "_id",
-      foreignField: "_id",
-      as: "product"
-    }
-  },
-  { $unwind: "$product" },
-  {
-    $project: {
-      name: "$product.name",
-      totalQuantity: 1
-    }
-  }
+const start = new Date()
+start.setHours(0,0,0,0)
+
+const end = new Date()
+end.setHours(23,59,59,999)
+const todayRevenue = await Sale.aggregate([
+{
+$match:{
+createdAt:{ $gte: start, $lte: end }
+}
+},
+{
+$group:{
+_id:null,
+revenue:{ $sum:"$revenue" }
+}
+}
 ])
-    // TOP PRODUCTS BY REVENUE
-   const topProductsRevenue = await Sale.aggregate([
-  {
-    $group: {
-      _id: "$metadata.product_id",
-      totalRevenue: { $sum: "$revenue" }
-    }
-  },
-  { $sort: { totalRevenue: -1 } },
-  { $limit: 5 },
 
-  {
-    $lookup: {
-      from: "products",
-      localField: "_id",
-      foreignField: "_id",
-      as: "product"
-    }
-  },
 
-  { $unwind: "$product" },
+/* LOW STOCK */
 
-  {
-    $project: {
-      name: "$product.name",
-      totalRevenue: 1
-    }
-  }
+const lowStock = await Product.find({
+$expr:{ $lte:["$current_stock","$reorder_point"] }
+})
+
+
+/* TOP PRODUCT */
+
+const topProduct = await Sale.aggregate([
+{
+$group:{
+_id:"$product_id",
+total:{ $sum:"$quantity_sold" },
+productName:{ $first:"$product_name" }
+}
+},
+{ $sort:{ total:-1 } },
+{ $limit:1 },
+{
+$project:{
+name:"$productName",
+quantity_sold:"$total"
+}
+}
 ])
-    // LOW STOCK
-    const lowStock = await Product.find({
-      $expr: { $lte: ["$current_stock", "$reorder_point"] }
-    })
 
-    res.json({
-      total_revenue: totalRevenue,
-      total_quantity_sold: totalQuantity,
-      avg_daily_sales: avgDailySales,
-      top_products_by_quantity: topProductsQty,
-      top_products_by_revenue: topProductsRevenue,
-      low_stock_alerts: lowStock
-    })
 
-  } catch (error) {
-    console.error(error)
-    res.status(500).json({ message: "Dashboard analytics error" })
-  }
+/* RECENT SALES */
+
+const recentSales = await Sale.find()
+.sort({ createdAt: -1 })
+.limit(5)
+.lean()
+
+const formattedSales = recentSales.map((sale) => ({
+_id: sale._id,
+product_name: sale.product_name,
+quantity_sold: sale.quantity_sold,
+revenue: sale.revenue
+}))
+
+res.json({
+
+today_revenue: todayRevenue[0]?.revenue || 0,
+
+low_stock_alerts: lowStock,
+
+top_product: topProduct[0] || null,
+
+recent_sales: formattedSales
+
+
+})
+
+}catch(err){
+
+console.error(err)
+res.status(500).json({message:"Dashboard overview error"})
+
+}
+
 })
 
 module.exports = router

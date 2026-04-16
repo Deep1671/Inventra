@@ -1,58 +1,42 @@
 const express = require("express")
 const router = express.Router()
-const Sale = require("../models/sale")
-const Product = require("../models/product")
+
+const unifiedSalesController = require("../controllers/unifiedSalesController")
 const authMiddleware = require("../middleware/authmiddleware")
 const roleMiddleware = require("../middleware/rolemiddleware")
 
 router.use(authMiddleware)
+router.use(roleMiddleware(["admin","manager"]))
 
-// CREATE SALE
-router.post("/", roleMiddleware(["admin","manager"]), async (req, res) => {
-  try {
+// ====================================
+// UNIFIED SALES ENDPOINTS
+// Handles both single-item and multi-item sales
+// ====================================
 
-    const { product_id, quantity_sold } = req.body
+// Get all sales (unified view of quick sales + multi-item orders)
+router.get("/", unifiedSalesController.getAllSales)
 
-    const product = await Product.findById(product_id)
+// Create quick sale (single item, immediate completion)
+router.post("/quick", unifiedSalesController.createQuickSale)
 
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" })
-    }
+// Create multi-item sales order
+router.post("/orders", unifiedSalesController.createSalesOrder)
 
-    if (product.current_stock < quantity_sold) {
-      return res.status(400).json({ message: "Insufficient stock" })
-    }
+// Update sales order status
+router.patch("/orders/:id/status", unifiedSalesController.updateSalesOrderStatus)
 
-    const revenue = quantity_sold * product.selling_price
+// Get sales analytics
+router.get("/analytics", unifiedSalesController.getSalesAnalytics)
 
-    // 🔥 IMPORTANT CHANGE → add date
-    // Create sale record (TIME-SERIES FORMAT)
-const sale = await Sale.create({
-  date: new Date(),
-  metadata: {
-    product_id: product_id
-  },
-  product_id: product_id,
-  quantity_sold,
-  revenue
-})
+// Get sales dashboard data
+router.get("/dashboard", unifiedSalesController.getSalesDashboard)
 
-    // Deduct stock
-    product.current_stock -= quantity_sold
-    await product.save()
+// ====================================
+// BACKWARD COMPATIBILITY 
+// Keep old endpoint for existing frontend
+// ====================================
 
-    res.status(201).json({
-      message: "Sale recorded successfully",
-      sale,
-      updated_stock: product.current_stock
-    })
-
-  } catch (error) {
-    res.status(500).json({
-      message: "Error creating sale",
-      error
-    })
-  }
-})
+// Legacy single sale creation (redirects to quick sale)
+router.post("/", unifiedSalesController.createQuickSale)
 
 module.exports = router
