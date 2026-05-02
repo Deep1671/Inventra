@@ -14,7 +14,7 @@ const { getOpenRouterService } = require("./openrouterService");
 const llmService = getOpenRouterService();
 console.log("[Chatbot] Initialized with OpenRouter API");
 
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = process.env.API_BASE_URL || process.env.BACKEND_URL || "http://localhost:5000/api";
 
 // System prompt for Gemini
 const SYSTEM_PROMPT = `You are an intelligent inventory management chatbot assistant for a smart inventory system.
