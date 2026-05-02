@@ -5,6 +5,11 @@ import { GoogleLogin } from "@react-oauth/google"
 import "../styles/login.css"
 import Inventra from "../assets/InventraLogo.png"
 
+const normalizeApiBaseUrl = (value) => {
+  const trimmed = (value || "http://localhost:5000").replace(/\/$/, "")
+  return trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`
+}
+
 function Login() {
   const navigate = useNavigate()
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
@@ -28,7 +33,7 @@ function Login() {
     setLoading(true)
     setError("")
     try {
-     const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api"
+      const apiBase = normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL)
       const res = await axios.post(`${apiBase}/auth/login`, formData)
       localStorage.setItem("token", res.data.token)
       localStorage.setItem("user", JSON.stringify(res.data.user))
@@ -41,7 +46,7 @@ function Login() {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api"
+     const apiBase = normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL)
       const res = await axios.post(`${apiBase}/auth/google`, {
         token: credentialResponse.credential,
       })
