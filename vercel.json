@@ -2,7 +2,7 @@
   "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/dist",
   "framework": "vite",
-  "nodeVersion": "18.x",
+  "nodeVersion": "24.x",
   "env": {
     "VITE_API_BASE_URL": "@vite-api-url"
   },
