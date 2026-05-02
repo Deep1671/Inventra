@@ -6,7 +6,7 @@ import performanceService from './performanceService';
  */
 class APIService {
   constructor() {
-    this.API_BASE = 'http://localhost:5000/api';
+    this.API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
     this.pendingRequests = new Map();
     this.requestStats = {
       total: 0,
