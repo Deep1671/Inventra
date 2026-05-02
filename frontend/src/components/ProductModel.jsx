@@ -21,7 +21,7 @@ reorder_quantity:product?.reorder_quantity || ""
 useEffect(() => {
   const fetchSuppliers = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/suppliers", {
+       const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/suppliers`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setSuppliers(res.data)
@@ -53,7 +53,7 @@ try{
 if(product){
 
 await axios.put(
-`http://localhost:5000/api/products/${product._id}`,
+`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/products/${product._id}`,
 form,
 {
 headers:{ Authorization:`Bearer ${token}` }
@@ -63,7 +63,7 @@ headers:{ Authorization:`Bearer ${token}` }
 }else{
 
 await axios.post(
-"http://localhost:5000/api/products",
+`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/products`,
 form,
 {
 headers:{ Authorization:`Bearer ${token}` }
