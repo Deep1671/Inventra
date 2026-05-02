@@ -101,7 +101,9 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    const isVercelOrigin = typeof origin === 'string' && /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)
+
+    if (!origin || allowedOrigins.includes(origin) || isVercelOrigin) {
       callback(null, true)
     } else {
       console.warn(`CORS request from unauthorized origin: ${origin}`)
