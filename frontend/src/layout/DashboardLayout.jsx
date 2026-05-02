@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 import Sidebar from "../components/Sidebar"
-import Topbar from "../components/topbar"
+import Topbar from "../components/Topbar"
 import ChatBot from "../components/ChatBot"
 import { Outlet, useLocation } from "react-router-dom"
 import "../styles/dashboardLayout.css"
