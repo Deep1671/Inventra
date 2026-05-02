@@ -76,7 +76,7 @@ export const useApiData = (endpoint, options = {}) => {
       const token = localStorage.getItem('token');
       const startTime = performance.now();
       
-      const response = await axios.get(`http://localhost:5000/api${endpoint}`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}${endpoint}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
