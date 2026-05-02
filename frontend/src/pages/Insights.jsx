@@ -92,7 +92,7 @@ const Insights = () => {
   const [llmStatus, setLLMStatus] = useState('checking');
   const [customQuery, setCustomQuery] = useState('');
 
-  const API_BASE = 'http://localhost:5000/api';
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
   // Check user role on mount
   useEffect(() => {
