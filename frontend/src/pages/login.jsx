@@ -28,7 +28,8 @@ function Login() {
     setLoading(true)
     setError("")
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", formData)
+     const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api"
+      const res = await axios.post(`${apiBase}/auth/login`, formData)
       localStorage.setItem("token", res.data.token)
       localStorage.setItem("user", JSON.stringify(res.data.user))
       navigate("/dashboard")
@@ -40,7 +41,8 @@ function Login() {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/google", {
+      const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api"
+      const res = await axios.post(`${apiBase}/auth/google`, {
         token: credentialResponse.credential,
       })
       localStorage.setItem("token", res.data.token)
