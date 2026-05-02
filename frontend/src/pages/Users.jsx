@@ -61,7 +61,7 @@ if(!window.confirm("Delete user?")) return
 try{
 
 await axios.delete(
-`http://localhost:5000/api/users/${id}`,
+`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/users/${id}`,
 {
 headers:{ Authorization:`Bearer ${token}` }
 }
