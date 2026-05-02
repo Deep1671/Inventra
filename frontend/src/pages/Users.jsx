@@ -23,7 +23,7 @@ const fetchUsers = async()=>{
 try{
 
 const res = await axios.get(
-"http://localhost:5000/api/users",
+`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/users`,
 {
 headers:{ Authorization:`Bearer ${token}` }
 }
