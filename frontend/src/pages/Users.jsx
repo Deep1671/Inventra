@@ -87,7 +87,7 @@ if(!newPassword) return
 try{
 
 await axios.patch(
-`http://localhost:5000/api/users/${id}/reset-password`,
+`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/users/${id}/reset-password`,
 { password:newPassword },
 {
 headers:{ Authorization:`Bearer ${token}` }
