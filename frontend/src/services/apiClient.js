@@ -1,11 +1,17 @@
 import axios from 'axios'
 
 // Get API base URL from environment variables or use default
-const apiBaseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
+
+const normalizeApiBaseUrl = (value) => {
+  const trimmed = (value || 'http://localhost:5000').replace(/\/$/, '')
+  return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`
+}
+
+// Get API base URL from environment variables or use default
+const apiBaseURL = normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL)
 
 console.log('[API Client] Base URL:', apiBaseURL)
-
-// Create axios instance
+  
 const axiosInstance = axios.create({
   baseURL: apiBaseURL,
   timeout: 30000,
