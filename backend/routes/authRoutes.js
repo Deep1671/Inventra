@@ -299,6 +299,7 @@ router.post("/forgot-password", async (req,res)=>{
       `Click the link to reset your password:\n${resetLink}`
     )
 
+    console.log(`[Auth] Password reset link generated for ${user.email}`)
     res.json({
       message:"Reset password link sent to user email"
     })
