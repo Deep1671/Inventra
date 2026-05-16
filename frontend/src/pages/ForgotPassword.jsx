@@ -3,6 +3,7 @@ import axios from "axios"
 import { Link } from "react-router-dom"
 import logo from "../assets/Inventra.png"
 import "../styles/authRecovery.css"
+import { normalizeApiBaseUrl } from "../utils/apiBaseUrl"
 
 function ForgotPassword(){
 
@@ -18,10 +19,8 @@ function ForgotPassword(){
 
     try{
 
-      const res = await axios.post(
-   `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/auth/forgot-password`,
-        { email }
-      )
+       const apiBase = normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL)
+      const res = await axios.post(`${apiBase}/auth/forgot-password`, { email })
 
       setMessage(res.data.message)
 
