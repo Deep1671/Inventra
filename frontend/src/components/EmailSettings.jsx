@@ -79,7 +79,7 @@ const EmailSettings = () => {
         <div className="email-section">
           <h3>🚨 Low Stock Alerts</h3>
           <div className="email-info">
-            <p><strong>Current Status:</strong> {process.env.REACT_APP_SEND_EMAILS === 'true' ? '✅ Enabled' : '❌ Disabled'}</p>
+            <p><strong>Current Status:</strong> {import.meta.env.VITE_SEND_EMAILS === 'true' ? '✅ Enabled' : '❌ Disabled'}</p>
             <p><strong>Schedule:</strong> Every 6 hours</p>
             <p><strong>Recipients:</strong> Admin users</p>
           </div>
@@ -146,7 +146,7 @@ const EmailSettings = () => {
             </div>
             <div className="config-item">
               <label>Admin Email:</label>
-              <span>{process.env.REACT_APP_ADMIN_EMAIL || 'Not configured'}</span>
+              <span>{import.meta.env.VITE_ADMIN_EMAIL || 'Not configured'}</span>
             </div>
           </div>
         </div>
