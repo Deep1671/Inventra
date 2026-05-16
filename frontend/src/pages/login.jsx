@@ -4,12 +4,7 @@ import { useNavigate, Link } from "react-router-dom"
 import { GoogleLogin } from "@react-oauth/google"
 import "../styles/login.css"
 import Inventra from "../assets/InventraLogo.png"
-
-const normalizeApiBaseUrl = (value) => {
-  const trimmed = (value || "http://localhost:5000").replace(/\/$/, "")
-  return trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`
-}
-
+import { normalizeApiBaseUrl } from "../utils/apiBaseUrl"
 function Login() {
   const navigate = useNavigate()
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
