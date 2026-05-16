@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../services/apiClient';
 import '../styles/apidiagnostics.css';
 
@@ -7,11 +7,8 @@ const APIdiagnostics = () => {
   const [loading, setLoading] = useState(true);
   const [expandedEndpoint, setExpandedEndpoint] = useState(null);
 
-  useEffect(() => {
-    runDiagnostics();
-  }, []);
 
-  const testEndpoint = async (endpoint, method = 'GET') => {
+  const testEndpoint = useCallback(async (endpoint, method = 'GET') => {
     const startTime = performance.now();
     try {
       let response;
@@ -41,9 +38,8 @@ const APIdiagnostics = () => {
         errorData: error?.response?.data
       };
     }
-  };
-
-  const runDiagnostics = async () => {
+  },[]);
+const runDiagnostics = useCallback(async () => {
     const endpoints = [
       { url: '/products', method: 'GET' },
       { url: '/suppliers', method: 'GET' },
@@ -62,7 +58,17 @@ const APIdiagnostics = () => {
 
     setResults(diagResults);
     setLoading(false);
-  };
+ 
+  }, [testEndpoint]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      runDiagnostics();
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [runDiagnostics]);
+
 
   const handleRetry = async () => {
     setLoading(true);
