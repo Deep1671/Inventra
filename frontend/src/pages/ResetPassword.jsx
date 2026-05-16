@@ -3,7 +3,7 @@ import axios from "axios"
 import { Link, useParams } from "react-router-dom"
 import logo from "../assets/Inventra.png"
 import "../styles/authRecovery.css"
-
+import { normalizeApiBaseUrl } from "../utils/apiBaseUrl"
 function ResetPassword(){
 
   const { token } = useParams()
@@ -20,10 +20,8 @@ function ResetPassword(){
 
     try{
 
-      const res = await axios.post(
-         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/auth/reset-password/${token}`,
-        { password }
-      )
+     const apiBase = normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL)
+      const res = await axios.post(`${apiBase}/auth/reset-password/${token}`, { password })
 
       setMessage(res.data.message)
 
