@@ -289,7 +289,7 @@ const Inventory = () => {
       console.log("PO creation response:", res.data);
       if (res.data.success) {
         alert("✅ Purchase Order created successfully!");
-        fetchAlerts();
+        refetchAlerts();
       }
     } catch (error) {
       console.error("PO creation error:", error);
@@ -304,7 +304,7 @@ const Inventory = () => {
       const res = await api.patch(`/inventory/alerts/${alertId}/dismiss`, {});
       if (res.data.success) {
         alert("✅ Alert dismissed");
-        fetchAlerts();
+        refetchAlerts();
       }
     } catch (error) {
       alert("❌ Error dismissing alert: " + error.response?.data?.message);
@@ -321,8 +321,8 @@ const Inventory = () => {
         alert("✅ Transaction approved");
         setApprovalNotes("");
         setApprovingTxnId(null);
-        fetchTransactions();
-        fetchSummary();
+        refetchTransactions();
+        refetchSummary();
       }
     } catch (error) {
       alert("❌ Error approving transaction: " + (error.response?.data?.message || error.message));
@@ -339,7 +339,7 @@ const Inventory = () => {
         alert("✅ Transaction rejected");
         setApprovalNotes("");
         setApprovingTxnId(null);
-        fetchTransactions();
+        refetchTransactions();
       }
     } catch (error) {
       alert("❌ Error rejecting transaction: " + (error.response?.data?.message || error.message));
@@ -355,7 +355,7 @@ const Inventory = () => {
 
       if (res.data.success) {
         alert("✅ Variance approved and marked as resolved");
-        fetchVariances();
+        refetchVariances();
       }
     } catch (error) {
       alert("❌ Error approving variance: " + (error.response?.data?.message || error.message));
@@ -371,7 +371,7 @@ const Inventory = () => {
 
       if (res.data.success) {
         alert("✅ Variance cancelled and closed");
-        fetchVariances();
+        refetchVariances();
       }
     } catch (error) {
       alert("❌ Error cancelling variance: " + (error.response?.data?.message || error.message));
