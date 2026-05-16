@@ -132,6 +132,7 @@ mongoose.connect(process.env.MONGO_URI)
 // ROUTES
 app.use("/api/products", productRoutes)
 app.use("api/auth", authRoutes)
+app.use("/auth",authRoutes)
 //app.use("/api/forecast", forecastRoutes)
 app.use("/api/inventory", inventoryRoutes)
 app.use("/api/analytics", analyticsRoutes)
